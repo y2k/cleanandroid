@@ -3,44 +3,57 @@ package indrih.cleanandroid
 import androidx.annotation.CallSuper
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
+import indrih.cleanandroid.CleanContract.*
+import org.jetbrains.anko.AnkoLogger
+import org.jetbrains.anko.warn
 
 /**
  * Базовая реализация Presenter-а, наследуемая всем остальным Presenter-ам.
  *
  * Абстрактный презентер, в котором организована обработка жизненного цикла запускаемых корутин.
  * Все корутины, запускаемые в наследниках этого класса, будут остановлены как только будет
- * вызван метод [detachView].
+ * вызван метод [onCleared].
  */
-abstract class BasePresenter<View, Router>(
+abstract class CleanPresenter<Event, Router>(
     val router: Router
 ) :
     CoroutineScope,
-    BaseContract.Presenter<View>
-        where View : BaseContract.View,
-              Router : BaseContract.Router
+    CleanContract.Presenter<Event>,
+    AnkoLogger
+        where Event : AbstractEvent,
+              Router : CleanContract.Router
 {
-    private var view: View? = null
+    protected var requiredWriteInLog = false
+
+    private var view: CleanContract.View<Event>? = null
 
     private var firstAttached = true
 
-    private val buffer = ArrayList<BaseContract.BaseEvent>()
+    private val buffer = ArrayList<Event>()
 
     @CallSuper
-    override fun attachView(view: View) {
+    override fun attachView(view: CleanContract.View<Event>) {
         this.view = view
         if (firstAttached) {
             onFirstAttached()
             firstAttached = false
         }
         buffer.forEach(view::notify)
+        if (requiredWriteInLog)
+            warn("attachView")
     }
 
     @CallSuper
-    override fun onFirstAttached() = Unit
+    override fun onFirstAttached() {
+        if (requiredWriteInLog)
+            warn("onFirstAttached")
+    }
 
     @CallSuper
     override fun detachView() {
         view = null
+        if (requiredWriteInLog)
+            warn("detachView")
     }
 
     @CallSuper
@@ -49,15 +62,19 @@ abstract class BasePresenter<View, Router>(
         coroutineContext.cancelChildren()
     }
 
-    override fun <Event : BaseContract.BaseEvent> eventIsCommitted(event: Event) {
-        buffer.removeAll { it::class == event::class }
+    override fun eventIsCommitted(event: Event) {
+        buffer.removeAll { it::class == event.clazz }
+        if (requiredWriteInLog)
+            warn("eventIsCommitted: ${event.clazz}")
     }
 
     @CallSuper
-    protected fun notifyUI(event: BaseContract.BaseEvent) {
-        buffer.removeAll { it::class == event::class }
+    protected fun notifyUI(event: Event) {
+        buffer.removeAll { it::class == event.clazz }
         buffer.add(event)
         view?.notify(event)
+        if (requiredWriteInLog)
+            warn("notifyUI: ${event.clazz}")
     }
 
     private val job = SupervisorJob()

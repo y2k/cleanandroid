@@ -1,64 +1,64 @@
 package indrih.cleanandroid
 
+import kotlin.reflect.KClass
+
 /**
  * Базовый, обобщающий контракт для всех остальных контрактов.
  * Контракт обеспечивает связи View <-> Presenter -> Interactor -> Gateway.
- * На всякий случай, [BaseContract] имплементирован остальным контрактам, с
- * заделом на будущее.
  *
  * Использование [Exception] должно быть сведено к минимуму.
  * [Exception] означает внештатную ситуацию, например как разрыв связи с источником данных.
  * Если нужно указать, что функция отработала с ошибкой, то она должна возвращать
  * nullable-тип, где null - сигнал об ошибке, not-null - сигнал об успехе.
- *
  * Если функция ничего не возвращает (по логике), то она должна возвращать [Boolean] как
  * результат выполнения.
  */
-interface BaseContract {
+interface CleanContract {
     /**
      * Не выполняет сам каких-либо действий, всю поступающую информацию (действия пользователя)
      * передаёт в Presenter.
-     * Выполняет приказы Presenter-а, например: покажи информацию, спрячь клавиатуру и т.д.
+     * Выполняет приказы Presenter-а (ивенты [AbstractEvent]),
+     * например: покажи информацию, спрячь клавиатуру и т.д.
      */
-    interface View {
+    interface View<Event : AbstractEvent> {
         /**
          * Уведомления, поступающие от презентера.
-         * ОБЯЗАТЕЛЕН для переопределения каждым View, наследующего этот интерфейс.
          */
-        fun <Event : BaseEvent> notify(event: Event)
+        fun notify(event: Event)
     }
 
     /**
-     * Ивенты, которые сможет отправлять Presenter во View.
+     * Создаваемые ивенты должны наследовать этот абстрактный класс.
+     * Если создаётся класс, оборачивающий другой ивент, обязательно должен
+     * вызываться метод [withInit], иначе [IllegalStateException].
      */
-    abstract class BaseEvent {
-        /**
-         * Скрывает уведомление, показанное на экране.
-         * Работает как для Toast-ов, так и для Alert-ов.
-         * Если такового нет, то ничего не происходит.
-         */
-        object HideNotifyEvent : BaseEvent()
+    abstract class AbstractEvent {
+        private var _clazz: KClass<out AbstractEvent>? = this::class
 
-        /**
-         * Поднять клавиатуру.
-         */
-        object ShowKeyboard : BaseEvent()
+        val clazz: KClass<out AbstractEvent>
+            get() = _clazz
+                ?: throw IllegalStateException("У данного класса должно быть вызван инициализирующий метод")
 
-        /**
-         * Опустить клавиатуру.
-         */
-        object HideKeyboard : BaseEvent()
+        init {
+            if (this::class.typeParameters.isNotEmpty()) {
+                _clazz = null
+            }
+        }
+
+        fun withInit(event: CleanContract.AbstractEvent) {
+            this._clazz = event._clazz
+        }
     }
 
     /**
-     * Содержит поверхностную, общую логику. Получает уведомления от View о действиях пользователя,
+     * Получает уведомления от View о действиях пользователя,
      * командует Interactor-у выполнить какие-либо действия, командует View отобразить изменения.
      */
-    interface Presenter<V : View> {
+    interface Presenter<Event : AbstractEvent> {
         /**
          * Инициализирующий метод, связывающий View и Presenter.
          */
-        fun attachView(view: V)
+        fun attachView(view: View<Event>)
 
         /**
          * Вызывается только при первом attach.
@@ -72,18 +72,18 @@ interface BaseContract {
         fun detachView()
 
         /**
-         * Вызывается когда нужно освободить занимаемые ресурсы и остановить потоки.
+         * Вызывается когда нужно освободить занимаемые ресурсы (например остановить потоки).
          */
         fun onCleared()
 
         /**
-         * Вызывается, когда ивент обработан и вновь вызывать его не нужно.
+         * Вызывается [View], когда ивент обработан и вновь вызывать его не нужно.
          */
-        fun <Event : BaseEvent> eventIsCommitted(event: Event)
+        fun eventIsCommitted(event: Event)
     }
 
     /**
-     * Содержит более сложную логику/бизнес-логику/use case.
+     * Содержит более сложную логику/бизнес-логику/реализует use case.
      * Получает приказы от Presenter-а (хоть и не знает о нём напрямую), выполняет опредённые действия,
      * обращается к Gateway для получения информации.
      *
