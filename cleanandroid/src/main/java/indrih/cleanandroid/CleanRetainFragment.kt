@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import indrih.cleanandroid.CleanContract.AbstractEvent
 import org.jetbrains.anko.AnkoLogger
+import org.jetbrains.anko.info
 
 /**
  * Базовая реализация фрагмента, наследуемая всем остальным фрагментам.
@@ -23,7 +24,7 @@ import org.jetbrains.anko.AnkoLogger
  * [Presenter] - interface Presenter для контракта отображаемого фрагмента,
  * который, в свою очередь, унаследован от [CleanContract.Presenter].
  */
-abstract class CleanFragment<Event, Presenter> :
+abstract class CleanRetainFragment<Event, Presenter> :
     Fragment(),
     CleanContract.View<Event>,
     AnkoLogger
@@ -44,6 +45,8 @@ abstract class CleanFragment<Event, Presenter> :
         get() = requireNotNull(_view)
     private var _view: View? = null
 
+    protected var writeToLog = false
+
     protected fun LayoutInflater.inflate(
         @LayoutRes resource: Int,
         container: ViewGroup?,
@@ -56,24 +59,30 @@ abstract class CleanFragment<Event, Presenter> :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (writeToLog) info("fragment created")
         retainInstance = true
     }
 
     override fun onResume() {
         super.onResume()
+        if (writeToLog) info("view attached")
         presenter.attachView(this)
     }
 
     override fun onPause() {
         super.onPause()
+        if (writeToLog) info("view detached")
         presenter.detachView()
-        if (isRemoving)
+        if (isRemoving) {
+            if (writeToLog) info("resources cleared")
             presenter.onCleared()
+        }
         hideAlert() // чтобы не возникал экзепшен в случае поднятого алерта
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        if (writeToLog) info("fragment destroyed")
         presenter.onCleared() // чтобы точно ничего никуда не утекло
     }
 

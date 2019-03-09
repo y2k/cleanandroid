@@ -5,7 +5,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import indrih.cleanandroid.CleanContract.*
 import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.warn
+import org.jetbrains.anko.info
 
 /**
  * Базовая реализация Presenter-а, наследуемая всем остальным Presenter-ам.
@@ -23,7 +23,7 @@ abstract class CleanPresenter<Event, Router>(
         where Event : AbstractEvent,
               Router : CleanContract.Router
 {
-    protected var requiredWriteInLog = false
+    protected var writeToLog = false
 
     private var view: CleanContract.View<Event>? = null
 
@@ -39,21 +39,18 @@ abstract class CleanPresenter<Event, Router>(
             firstAttached = false
         }
         buffer.forEach(view::notify)
-        if (requiredWriteInLog)
-            warn("attachView")
+        if (writeToLog) info("attachView")
     }
 
     @CallSuper
     override fun onFirstAttached() {
-        if (requiredWriteInLog)
-            warn("onFirstAttached")
+        if (writeToLog) info("onFirstAttached")
     }
 
     @CallSuper
     override fun detachView() {
         view = null
-        if (requiredWriteInLog)
-            warn("detachView")
+        if (writeToLog) info("detachView")
     }
 
     @CallSuper
@@ -64,8 +61,7 @@ abstract class CleanPresenter<Event, Router>(
 
     override fun eventIsCommitted(event: Event) {
         buffer.removeAll { it::class == event.clazz }
-        if (requiredWriteInLog)
-            warn("eventIsCommitted: ${event.clazz}")
+        if (writeToLog) info("eventIsCommitted: ${event.clazz}")
     }
 
     @CallSuper
@@ -73,8 +69,7 @@ abstract class CleanPresenter<Event, Router>(
         buffer.removeAll { it::class == event.clazz }
         buffer.add(event)
         view?.notify(event)
-        if (requiredWriteInLog)
-            warn("notifyUI: ${event.clazz}")
+        if (writeToLog) info("notifyUI: ${event.clazz}")
     }
 
     private val job = SupervisorJob()
