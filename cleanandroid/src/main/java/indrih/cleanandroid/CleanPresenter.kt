@@ -8,8 +8,7 @@ import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 
 /**
- * Базовая реализация Presenter-а, наследуемая всем остальным Presenter-ам.
- *
+ * Базовая реализация Presenter-а, от которой нужно наследовать все остальные Presenter-ы.
  * Абстрактный презентер, в котором организована обработка жизненного цикла запускаемых корутин.
  * Все корутины, запускаемые в наследниках этого класса, будут остановлены как только будет
  * вызван метод [onCleared].
@@ -35,15 +34,22 @@ abstract class CleanPresenter<Event, Router>(
     override fun attachView(view: CleanContract.View<Event>) {
         this.view = view
         if (firstAttached) {
-            onFirstAttached{ event ->
+            onFirstAttached(sendOneTimeEvent = { event ->
                 this.view?.notify(event)
-            }
+            })
             firstAttached = false
         }
         buffer.forEach(view::notify)
         if (writeLog) info("attachView")
     }
 
+    /**
+     * В [sendOneTimeEvent] должны приходить исключительно те ивенты, которые НЕ
+     * должны быть восстановлены при смене конфигурации: например, установка параметров.
+     * Вы можете изменить данные параметры в процессе работы, а после смены они будут заменены
+     * исходными данными. Т.к. такого допускать нельзя, такие ивенты должны поступать в
+     * [sendOneTimeEvent].
+     */
     @CallSuper
     override fun onFirstAttached(sendOneTimeEvent: (Event) -> Unit) {
         if (writeLog) info("onFirstAttached")
@@ -61,6 +67,10 @@ abstract class CleanPresenter<Event, Router>(
         coroutineContext.cancelChildren()
     }
 
+    /**
+     * Данный метод должен быть вызван только для тех ивентов, которые уже совершили то,
+     * зачем создавались, и не нуждаются в повторном отображении.
+     */
     override fun eventIsCommitted(event: Event) {
         buffer.removeAll { it::class == event.clazz }
         if (writeLog) info("eventIsCommitted: ${event.clazz}")

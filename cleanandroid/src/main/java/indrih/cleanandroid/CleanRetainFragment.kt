@@ -16,13 +16,9 @@ import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 
 /**
- * Базовая реализация фрагмента, наследуемая всем остальным фрагментам.
- *
- * [Event] - события, которыми [Presenter] сможет командовать о необходимости
+ * Базовая реализация Fragment-а, от которой нужно наследовать все остальные Fragment-ы.
+ * [Event] - события, которыми [Presenter] сможет уведомлять о необходимости
  * что-то образить на экране.
- *
- * [Presenter] - interface Presenter для контракта отображаемого фрагмента,
- * который, в свою очередь, унаследован от [CleanContract.Presenter].
  */
 abstract class CleanRetainFragment<Event, Presenter> :
     Fragment(),
@@ -59,31 +55,31 @@ abstract class CleanRetainFragment<Event, Presenter> :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (writeToLog) info("fragment created")
         retainInstance = true
+        if (writeToLog) info("fragment created")
     }
 
     override fun onResume() {
         super.onResume()
-        if (writeToLog) info("view attached")
         presenter.attachView(this)
+        if (writeToLog) info("view attached")
     }
 
     override fun onPause() {
         super.onPause()
-        if (writeToLog) info("view detached")
         presenter.detachView()
+        if (writeToLog) info("view detached")
         if (isRemoving) {
-            if (writeToLog) info("resources cleared")
             presenter.onCleared()
+            if (writeToLog) info("resources cleared")
         }
         hideAlert() // чтобы не возникал экзепшен в случае поднятого алерта
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (writeToLog) info("fragment destroyed")
         presenter.onCleared() // чтобы точно ничего никуда не утекло
+        if (writeToLog) info("fragment destroyed")
     }
 
     abstract fun onBackPressed()
@@ -102,6 +98,10 @@ abstract class CleanRetainFragment<Event, Presenter> :
 
     private var toast: Toast? = null
 
+    /**
+     * @param event экземпляр события, которое больше не нуждается в отображении после
+     * вывода информации на экран.
+     */
     protected fun showToast(message: String, event: Event, duration: Int = Toast.LENGTH_SHORT) {
         if (toast != null)
             hideToast()
@@ -118,6 +118,10 @@ abstract class CleanRetainFragment<Event, Presenter> :
 
     private var alertDialog: DialogInterface? = null
 
+    /**
+     * @param event экземпляр события, которое больше не нуждается в отображении после
+     * вывода информации на экран.
+     */
     protected fun showAlert(
         message: String,
         event: Event,

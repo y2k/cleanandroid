@@ -6,10 +6,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.anko.AnkoLogger
 
 /**
- * Базовая реализация Interactor-а, наследуемая всем остальным Interactor-ам.
- *
- * Создан для того, чтобы единожды прописывать всем реализациям [CleanContract.Interactor]
- * необходимые зависимости.
+ * Базовая реализация Interactor-а, от которой нужно наследовать все остальные Interactor-ы.
  */
 abstract class CleanInteractor : CleanContract.Interactor, AnkoLogger {
     protected val standardContext = Dispatchers.Default
