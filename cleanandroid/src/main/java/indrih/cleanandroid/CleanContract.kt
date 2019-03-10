@@ -63,10 +63,10 @@ interface CleanContract {
         /**
          * Вызывается только при первом attach.
          * При смене конфигурации вызываться не будет.
-         * @param senderOneTimeEvents в него стоит отправлять события, которые
+         * @param sendOneTimeEvent в него стоит отправлять события, которые
          * должны быть отображены лишь единожды - при вызове [onFirstAttached].
          */
-        fun onFirstAttached(senderOneTimeEvents: (Event) -> Unit)
+        fun onFirstAttached(sendOneTimeEvent: (Event) -> Unit)
 
         /**
          * Вызывается когда View больше не отображется.

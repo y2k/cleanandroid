@@ -23,7 +23,7 @@ abstract class CleanPresenter<Event, Router>(
         where Event : AbstractEvent,
               Router : CleanContract.Router
 {
-    protected var writeToLog = false
+    protected var writeLog = false
 
     private var view: CleanContract.View<Event>? = null
 
@@ -35,24 +35,24 @@ abstract class CleanPresenter<Event, Router>(
     override fun attachView(view: CleanContract.View<Event>) {
         this.view = view
         if (firstAttached) {
-            onFirstAttached(senderOneTimeEvents = { event ->
-                this@CleanPresenter.view?.notify(event = event)
-            })
+            onFirstAttached{ event ->
+                this.view?.notify(event)
+            }
             firstAttached = false
         }
         buffer.forEach(view::notify)
-        if (writeToLog) info("attachView")
+        if (writeLog) info("attachView")
     }
 
     @CallSuper
-    override fun onFirstAttached(senderOneTimeEvents: (Event) -> Unit) {
-        if (writeToLog) info("onFirstAttached")
+    override fun onFirstAttached(sendOneTimeEvent: (Event) -> Unit) {
+        if (writeLog) info("onFirstAttached")
     }
 
     @CallSuper
     override fun detachView() {
         view = null
-        if (writeToLog) info("detachView")
+        if (writeLog) info("detachView")
     }
 
     @CallSuper
@@ -63,21 +63,20 @@ abstract class CleanPresenter<Event, Router>(
 
     override fun eventIsCommitted(event: Event) {
         buffer.removeAll { it::class == event.clazz }
-        if (writeToLog) info("eventIsCommitted: ${event.clazz}")
+        if (writeLog) info("eventIsCommitted: ${event.clazz}")
     }
 
     /**
-     * Если вызов идёт из [onFirstAttached], то данный ивент не будет добавлен в буфер.
-     * Это сделано потому, что ивенты, отправляемые из [onFirstAttached], должны быть доставлены
-     * лишь единожды. Если ивент нужно доставлять как обычно, то отправку нужно
-     * положить в [attachView] (обязательно после вызова super.attachView).
+     * Сюда поступают ивенты, которые должны быть восстановлены после смены конфигурации.
+     * Скопления одинаковых ивентов, которые все разом будут вываливаться после смены конфигурации,
+     * не произойдёт. Буфер ивентов отчищается от уже поступивших ивентов подобного рода.
      */
     @CallSuper
     protected fun notifyUI(event: Event) {
         buffer.removeAll { it::class == event.clazz }
         buffer.add(event)
         view?.notify(event)
-        if (writeToLog) info("notifyUI: ${event.clazz}")
+        if (writeLog) info("notifyUI: ${event.clazz}")
     }
 
     private val job = SupervisorJob()
