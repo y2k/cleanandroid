@@ -35,17 +35,17 @@ abstract class CleanPresenter<Event, Router>(
     override fun attachView(view: CleanContract.View<Event>) {
         this.view = view
         if (firstAttached) {
-            launch {
-                onFirstAttached()
-                firstAttached = false
-            }
+            onFirstAttached(senderOneTimeEvents = { event ->
+                this@CleanPresenter.view?.notify(event = event)
+            })
+            firstAttached = false
         }
         buffer.forEach(view::notify)
         if (writeToLog) info("attachView")
     }
 
     @CallSuper
-    override suspend fun onFirstAttached() {
+    override fun onFirstAttached(senderOneTimeEvents: (Event) -> Unit) {
         if (writeToLog) info("onFirstAttached")
     }
 
@@ -74,10 +74,8 @@ abstract class CleanPresenter<Event, Router>(
      */
     @CallSuper
     protected fun notifyUI(event: Event) {
-        if (!firstAttached) {
-            buffer.removeAll { it::class == event.clazz }
-            buffer.add(event)
-        }
+        buffer.removeAll { it::class == event.clazz }
+        buffer.add(event)
         view?.notify(event)
         if (writeToLog) info("notifyUI: ${event.clazz}")
     }
