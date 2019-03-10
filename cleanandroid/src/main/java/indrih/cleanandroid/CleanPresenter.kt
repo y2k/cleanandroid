@@ -64,10 +64,18 @@ abstract class CleanPresenter<Event, Router>(
         if (writeToLog) info("eventIsCommitted: ${event.clazz}")
     }
 
+    /**
+     * Если вызов идёт из [onFirstAttached], то данный ивент не будет добавлен в буфер.
+     * Это сделано потому, что ивенты, отправляемые из [onFirstAttached], должны быть доставлены
+     * лишь единожды. Если ивент нужно доставлять как обычно, то отправку нужно
+     * положить в [attachView] (обязательно после вызова super.attachView).
+     */
     @CallSuper
     protected fun notifyUI(event: Event) {
-        buffer.removeAll { it::class == event.clazz }
-        buffer.add(event)
+        if (!firstAttached) {
+            buffer.removeAll { it::class == event.clazz }
+            buffer.add(event)
+        }
         view?.notify(event)
         if (writeToLog) info("notifyUI: ${event.clazz}")
     }
