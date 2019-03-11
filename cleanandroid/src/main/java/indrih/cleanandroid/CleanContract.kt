@@ -32,12 +32,8 @@ interface CleanContract {
      * Создаваемые ивенты должны наследовать этот абстрактный класс.
      */
     abstract class AbstractEvent {
-        private val kClass: KClass<out AbstractEvent> = this::class
-        private val members: MutableList<KCallable<*>> = mutableListOf()
-
-        init {
-            members.addAll(this::class.members)
-        }
+        private val kClass = this::class
+        private val members = this::class.members
 
         fun equalEvent(event: AbstractEvent): Boolean =
             kClass == event.kClass && members == event.members
