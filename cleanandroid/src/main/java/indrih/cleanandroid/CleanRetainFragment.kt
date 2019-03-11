@@ -12,7 +12,6 @@ import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.info
 
 /**
  * Базовая реализация Fragment-а, от которой нужно наследовать все остальные Fragment-ы.
@@ -55,22 +54,26 @@ abstract class CleanRetainFragment<Event, Presenter> :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        if (writeToLog) info("fragment created")
+        if (writeToLog)
+            log("fragment created")
     }
 
     override fun onResume() {
         super.onResume()
         presenter.attachView(this)
-        if (writeToLog) info("view attached")
+        if (writeToLog) 
+            log("view attached")
     }
 
     override fun onPause() {
         super.onPause()
         presenter.detachView()
-        if (writeToLog) info("view detached")
+        if (writeToLog)
+            log("view detached")
         if (isRemoving) {
             presenter.onCleared()
-            if (writeToLog) info("resources cleared")
+            if (writeToLog)
+                log("resources cleared")
         }
         hideAlert() // чтобы не возникал экзепшен в случае поднятого алерта
     }
@@ -78,7 +81,8 @@ abstract class CleanRetainFragment<Event, Presenter> :
     override fun onDestroy() {
         super.onDestroy()
         presenter.onCleared() // чтобы точно ничего никуда не утекло
-        if (writeToLog) info("fragment destroyed")
+        if (writeToLog)
+            log("fragment destroyed")
     }
 
     abstract fun onBackPressed()

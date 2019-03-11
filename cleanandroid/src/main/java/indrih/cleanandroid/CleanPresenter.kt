@@ -3,9 +3,7 @@ package indrih.cleanandroid
 import androidx.annotation.CallSuper
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
-import indrih.cleanandroid.CleanContract.*
 import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.info
 
 /**
  * Базовая реализация Presenter-а, от которой нужно наследовать все остальные Presenter-ы.
@@ -39,20 +37,20 @@ abstract class CleanPresenter<Event, Router>(
         }
         buffer.forEach(view::notify)
         if (writeToLog)
-            info("attachView")
+            log("attachView")
     }
 
     @CallSuper
     override fun onFirstAttached() {
         if (writeToLog)
-            info("onFirstAttached")
+            log("onFirstAttached")
     }
 
     @CallSuper
     override fun detachView() {
         view = null
         if (writeToLog)
-            info("detachView")
+            log("detachView")
     }
 
     @CallSuper
@@ -60,7 +58,7 @@ abstract class CleanPresenter<Event, Router>(
         buffer.clear()
         coroutineContext.cancelChildren()
         if (writeToLog)
-            info("onCleared")
+            log("onCleared")
     }
 
     /**
@@ -83,23 +81,27 @@ abstract class CleanPresenter<Event, Router>(
     protected fun notifyUI(event: Event) {
         if (event.isOneTime) {
             view?.notify(event)
+            if (writeToLog)
+                log("notifyUI: $event")
         } else {
             buffer.removeAll { it.equalEvent(event) }
             buffer.add(event)
             view?.notify(event)
+            if (writeToLog)
+                log("notifyUI: $event")
 
             if (event.prev != null && event.next == null)
                 deleteChain(event)
         }
-
-        if (writeToLog)
-            info("notifyUI: $event")
     }
 
+    /**
+     * Рекурсивно дропает всю цепочку событий, начиная с конца.
+     */
     private fun deleteChain(event: AbstractEvent) {
         buffer.removeAll { it.equalEvent(event) }
         if (writeToLog)
-            info("deleteChain: $event")
+            println("deleteChain: $event")
         event.prev?.let {
             deleteChain(it)
         }

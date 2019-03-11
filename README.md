@@ -110,3 +110,50 @@ if (event != null) {
     notifyUI(SavingCompleted)
 }
 ```
+
+## Отменяемость и самоуничтожаемость событий
+Некоторые Event-ы нужно обработать лишь раз: например, установка параметров.
+Пользователь может поменять эти параметры, а затем повернёт телефон - и если Event с параметрами 
+не будет отменён - он автоматически заменит новые данные на старые.
+Что же делать? Отменять Event после того как он выполнил своё назначение.
+
+Как? Если несколько вариантов:
+
+1) [CleanPresenter.eventIsCommitted](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/CleanPresenter.kt#L68) 
+- вы можете в любой удобный для вас момент удалить событие.
+2) [AbstractEvent.isOneTime](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractEvent.kt#L42) 
+- при описании объекта/класса, реализующего некоторый Event, 
+установить этот параметр true - тогда событие не будет сохраняться в буфер.
+```
+sealed class Event : AbstractEvent() {
+    object Foo : Event() {
+        init { isOneTime = true }
+    }
+}
+```
+
+3) Есть ещё вариант организовать цепочку событий 
+[AbstractEvent.next & prev](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractEvent.kt#L16)
+. Но этот вариант имеет несколько нюансов:
+
+   a) он может использоваться только с объектами.
+
+   b) чем длиннее цепочка, тем больше шансов ошибиться и поставить не тот параметр в цепочку.
+
+   Но тем не менее, иногда этот вариант удобен, к примеру:
+   у вас есть два Event - ShowProgress и HideProgress. Вы организовываете их в цепочку
+   (Цепочка подобна связанным спискам):
+   ```
+   sealed class Event : AbstractEvent() {
+       object ShowProgress : Event() {
+           init { next = HideProgress }
+       }
+       object HideProgress : Event() {
+           init { prev = ShowProgress }
+       }
+   }
+   ```
+
+   Сначала вы отправляете на отображение ShowProgress, пользователь поворачивает устройство,
+   этот Event восстанавливается из буфера. Как только приходит HideProgress - он идёт на отображение, 
+   а затем они вместе с ShowProgress удаляются из буфера. Цепочку можно организовать любой длины.
