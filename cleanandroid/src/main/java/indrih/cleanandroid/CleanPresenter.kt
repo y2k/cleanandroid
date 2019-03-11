@@ -34,37 +34,33 @@ abstract class CleanPresenter<Event, Router>(
     override fun attachView(view: CleanContract.View<Event>) {
         this.view = view
         if (firstAttached) {
-            onFirstAttached(sendOneTimeEvent = { event ->
-                this.view?.notify(event)
-            })
+            onFirstAttached()
             firstAttached = false
         }
         buffer.forEach(view::notify)
-        if (writeToLog) info("attachView")
+        if (writeToLog)
+            info("attachView")
     }
 
-    /**
-     * В [sendOneTimeEvent] должны приходить исключительно те ивенты, которые НЕ
-     * должны быть восстановлены при смене конфигурации: например, установка параметров.
-     * Вы можете изменить данные параметры в процессе работы, а после смены они будут заменены
-     * исходными данными. Т.к. такого допускать нельзя, такие ивенты должны поступать в
-     * [sendOneTimeEvent].
-     */
     @CallSuper
-    override fun onFirstAttached(sendOneTimeEvent: (Event) -> Unit) {
-        if (writeToLog) info("onFirstAttached")
+    override fun onFirstAttached() {
+        if (writeToLog)
+            info("onFirstAttached")
     }
 
     @CallSuper
     override fun detachView() {
         view = null
-        if (writeToLog) info("detachView")
+        if (writeToLog)
+            info("detachView")
     }
 
     @CallSuper
     override fun onCleared() {
         buffer.clear()
         coroutineContext.cancelChildren()
+        if (writeToLog)
+            info("onCleared")
     }
 
     /**
@@ -72,8 +68,7 @@ abstract class CleanPresenter<Event, Router>(
      * зачем создавались, и не нуждаются в повторном отображении.
      */
     override fun eventIsCommitted(event: Event) {
-        buffer.removeAll { it.equalEvent(event) }
-        if (writeToLog) info("eventIsCommitted: $event")
+        smartDelete(event)
     }
 
     /**
@@ -83,10 +78,31 @@ abstract class CleanPresenter<Event, Router>(
      */
     @CallSuper
     protected fun notifyUI(event: Event) {
-        buffer.removeAll { it.equalEvent(event) }
-        buffer.add(event)
+        if (!event.isOneTime) {
+            smartDelete(event)
+            buffer.add(event)
+        }
+
         view?.notify(event)
-        if (writeToLog) info("notifyUI: $event")
+
+        if (writeToLog)
+            info("notifyUI: $event")
+    }
+
+    private fun smartDelete(event: Event) {
+        if (event.prev != null && event.next == null)
+            deleteChain(event)
+        else
+            buffer.removeAll { it.equalEvent(event) }
+    }
+
+    private fun deleteChain(event: AbstractEvent) {
+        buffer.removeAll { it.equalEvent(event) }
+        if (writeToLog)
+            info("deleteChain: $event")
+        event.prev?.let {
+            deleteChain(it)
+        }
     }
 
     private val job = SupervisorJob()

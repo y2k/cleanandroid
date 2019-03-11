@@ -1,8 +1,5 @@
 package indrih.cleanandroid
 
-import kotlin.reflect.KCallable
-import kotlin.reflect.KClass
-
 /**
  * Базовый, обобщающий контракт для всех остальных контрактов.
  * Контракт обеспечивает связи View <-> Presenter -> Interactor -> Gateway.
@@ -29,17 +26,6 @@ interface CleanContract {
     }
 
     /**
-     * Создаваемые ивенты должны наследовать этот абстрактный класс.
-     */
-    abstract class AbstractEvent {
-        private val kClass = this::class
-        private val members = this::class.members
-
-        fun equalEvent(event: AbstractEvent): Boolean =
-            kClass == event.kClass && members == event.members
-    }
-
-    /**
      * Получает уведомления от View о действиях пользователя,
      * командует Interactor-у выполнить какие-либо действия, командует View отобразить изменения.
      */
@@ -52,10 +38,8 @@ interface CleanContract {
         /**
          * Вызывается только при первом attach.
          * При смене конфигурации вызываться не будет.
-         * @param sendOneTimeEvent в него стоит отправлять события, которые
-         * должны быть отображены лишь единожды - при вызове [onFirstAttached].
          */
-        fun onFirstAttached(sendOneTimeEvent: (Event) -> Unit)
+        fun onFirstAttached()
 
         /**
          * Вызывается когда View больше не отображется.
