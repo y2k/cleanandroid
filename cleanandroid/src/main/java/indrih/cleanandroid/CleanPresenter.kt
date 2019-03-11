@@ -22,7 +22,7 @@ abstract class CleanPresenter<Event, Router>(
         where Event : AbstractEvent,
               Router : CleanContract.Router
 {
-    protected var writeLog = false
+    protected var writeToLog = false
 
     private var view: CleanContract.View<Event>? = null
 
@@ -40,7 +40,7 @@ abstract class CleanPresenter<Event, Router>(
             firstAttached = false
         }
         buffer.forEach(view::notify)
-        if (writeLog) info("attachView")
+        if (writeToLog) info("attachView")
     }
 
     /**
@@ -52,13 +52,13 @@ abstract class CleanPresenter<Event, Router>(
      */
     @CallSuper
     override fun onFirstAttached(sendOneTimeEvent: (Event) -> Unit) {
-        if (writeLog) info("onFirstAttached")
+        if (writeToLog) info("onFirstAttached")
     }
 
     @CallSuper
     override fun detachView() {
         view = null
-        if (writeLog) info("detachView")
+        if (writeToLog) info("detachView")
     }
 
     @CallSuper
@@ -72,8 +72,8 @@ abstract class CleanPresenter<Event, Router>(
      * зачем создавались, и не нуждаются в повторном отображении.
      */
     override fun eventIsCommitted(event: Event) {
-        buffer.removeAll { it::class == event.clazz }
-        if (writeLog) info("eventIsCommitted: ${event.clazz}")
+        buffer.removeAll { it.equalEvent(event) }
+        if (writeToLog) info("eventIsCommitted: $event")
     }
 
     /**
@@ -83,10 +83,10 @@ abstract class CleanPresenter<Event, Router>(
      */
     @CallSuper
     protected fun notifyUI(event: Event) {
-        buffer.removeAll { it::class == event.clazz }
+        buffer.removeAll { it.equalEvent(event) }
         buffer.add(event)
         view?.notify(event)
-        if (writeLog) info("notifyUI: ${event.clazz}")
+        if (writeToLog) info("notifyUI: $event")
     }
 
     private val job = SupervisorJob()

@@ -1,5 +1,6 @@
 package indrih.cleanandroid
 
+import kotlin.reflect.KCallable
 import kotlin.reflect.KClass
 
 /**
@@ -29,25 +30,17 @@ interface CleanContract {
 
     /**
      * Создаваемые ивенты должны наследовать этот абстрактный класс.
-     * Если создаётся класс, оборачивающий другой ивент, обязательно должен
-     * вызываться метод [withInit], иначе [IllegalStateException].
      */
     abstract class AbstractEvent {
-        private var _clazz: KClass<out AbstractEvent>? = this::class
-
-        val clazz: KClass<out AbstractEvent>
-            get() = _clazz
-                ?: throw IllegalStateException("У данного класса должно быть вызван инициализирующий метод")
+        private val kClass: KClass<out AbstractEvent> = this::class
+        private val members: MutableList<KCallable<*>> = mutableListOf()
 
         init {
-            if (this::class.typeParameters.isNotEmpty()) {
-                _clazz = null
-            }
+            members.addAll(this::class.members)
         }
 
-        fun withInit(event: CleanContract.AbstractEvent) {
-            this._clazz = event._clazz
-        }
+        fun equalEvent(event: AbstractEvent): Boolean =
+            kClass == event.kClass && members == event.members
     }
 
     /**
