@@ -16,12 +16,9 @@
 
 ## Необходимые подробности
 * По умолчанию базовый фрагмент - retain. 
-* Presenter указывает View что необходимо отобразить с помощью [Event](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/CleanContract.kt#L34).
-Если вам нужно запускать некоторый код при каждом attach/detach презентера, положите этот код в методы `attachView` и `detachView`.
+* Presenter указывает View что необходимо отобразить с помощью [Event](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractEvent.kt).
+* Если вам нужно запускать некоторый код при каждом attach/detach презентера, положите этот код в методы `attachView` и `detachView`.
 Если же действия нужно совершить при первом поключении или в момент отчистки ресурсов, положите код в методы `onFirstAttached` и `onCleared`.
-* Чтобы некоторые события произошли лишь раз при первом подключении (например, Event с командой установить значения полей),
-такие события должны отправляться в переданную функцию `sendOneTimeEvent`, передаваемую в качестве параметра `onFirstAttached`.
-* Если событие обрамляет вызов фунций `showAlert`, `showToast` и т.д., то такое событие можно смело передавать в [notifyUI](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/CleanPresenter.kt#L85).
 
 ## Примеры кода
 ### На стороне контракта
@@ -113,6 +110,3 @@ if (event != null) {
     notifyUI(SavingCompleted)
 }
 ```
-
-## Планы на будущее
-Добавить поэтапные Event-ы

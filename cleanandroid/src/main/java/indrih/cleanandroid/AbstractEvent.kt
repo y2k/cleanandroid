@@ -38,9 +38,7 @@ abstract class AbstractEvent {
         when {
             event.kClass == this.kClass ->
                 "Циклическая зависимость"
-            isOneTime ->
-                "Одноразовый ивент не может иметь цепочек"
-            event.isOneTime ->
+            isOneTime || event.isOneTime->
                 "Одноразовый ивент не может иметь цепочек"
             else ->
                 null
@@ -48,9 +46,7 @@ abstract class AbstractEvent {
 
     private fun checkAllForOneTimeEvent() =
         when {
-            prev != null ->
-                "Одноразовый ивент не может иметь цепочек"
-            next != null ->
+            prev != null || next != null ->
                 "Одноразовый ивент не может иметь цепочек"
             else ->
                 null

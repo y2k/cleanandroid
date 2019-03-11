@@ -68,7 +68,10 @@ abstract class CleanPresenter<Event, Router>(
      * зачем создавались, и не нуждаются в повторном отображении.
      */
     override fun eventIsCommitted(event: Event) {
-        smartDelete(event)
+        if (event.prev != null && event.next == null)
+            deleteChain(event)
+        else if (!event.isOneTime)
+            buffer.removeAll { it.equalEvent(event) }
     }
 
     /**
@@ -78,22 +81,19 @@ abstract class CleanPresenter<Event, Router>(
      */
     @CallSuper
     protected fun notifyUI(event: Event) {
-        if (!event.isOneTime) {
-            smartDelete(event)
+        if (event.isOneTime) {
+            view?.notify(event)
+        } else {
+            buffer.removeAll { it.equalEvent(event) }
             buffer.add(event)
-        }
+            view?.notify(event)
 
-        view?.notify(event)
+            if (event.prev != null && event.next == null)
+                deleteChain(event)
+        }
 
         if (writeToLog)
             info("notifyUI: $event")
-    }
-
-    private fun smartDelete(event: Event) {
-        if (event.prev != null && event.next == null)
-            deleteChain(event)
-        else
-            buffer.removeAll { it.equalEvent(event) }
     }
 
     private fun deleteChain(event: AbstractEvent) {

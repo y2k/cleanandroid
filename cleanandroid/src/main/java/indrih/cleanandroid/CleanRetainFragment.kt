@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import indrih.cleanandroid.CleanContract.AbstractEvent
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 
