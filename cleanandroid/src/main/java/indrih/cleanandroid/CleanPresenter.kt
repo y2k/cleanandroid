@@ -88,7 +88,7 @@ abstract class CleanPresenter<Event, Router>(
      * не произойдёт. Буфер ивентов отчищается от уже поступивших ивентов подобного рода.
      */
     @CallSuper
-    protected fun notifyUI(event: Event, showMode: AbstractEvent.ShowMode) {
+    protected fun notifyUI(event: Event, showMode: AbstractEvent.ShowMode = EveryTime) {
         event.showMode = showMode
 
         buffer.removeAllEqual(event)
