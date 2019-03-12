@@ -14,9 +14,7 @@ abstract class AbstractEvent {
         internal set
 
     sealed class ShowMode {
-        object Once : ShowMode() {
-            var autoremoval: Boolean = true
-        }
+        class Once(var autoremoval: Boolean = true) : ShowMode()
 
         object EveryTime : ShowMode()
 
