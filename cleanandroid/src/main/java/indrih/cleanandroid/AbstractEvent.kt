@@ -10,62 +10,27 @@ package indrih.cleanandroid
  * событий, реализованных через object.
  */
 abstract class AbstractEvent {
-    /**
-     * Ссылка на предыдущее звено цепочки.
-     */
-    var prev: AbstractEvent? = null
-        protected set(value) {
-            if (value != null) {
-                val messageError = checkAllForChain(value)
-                if (messageError != null)
-                    throw IllegalArgumentException(messageError)
+    lateinit var showMode: ShowMode
+        internal set
+
+    sealed class ShowMode {
+        object Once : ShowMode()
+
+        object EveryTime : ShowMode()
+
+        class Chain(
+            val prev: AbstractEvent? = null,
+            val next: AbstractEvent? = null
+        ) : ShowMode() {
+            fun isEnd() =
+                prev != null && next == null
+
+            init {
+                if (prev == null && next == null)
+                    throw IllegalArgumentException("Звено цепи должно иметь как минимум одну связь")
             }
-            field = value
         }
-
-    /**
-     * Ссылка на следующее звено цепочки.
-     */
-    var next: AbstractEvent? = null
-        protected set(value) {
-            if (value != null) {
-                val message = checkAllForChain(value)
-                if (message != null)
-                    throw IllegalArgumentException(message)
-            }
-            field = value
-        }
-
-    /**
-     * Если true, то ивент будет удалён сразу после отображения.
-     */
-    var isOneTime: Boolean = false
-        protected set(value) {
-            if (value) {
-                val message = checkAllForOneTimeEvent()
-                if (message != null)
-                    throw IllegalArgumentException(message)
-            }
-            field = value
-        }
-
-    private fun checkAllForChain(event: AbstractEvent) =
-        when {
-            event.kClass == this.kClass ->
-                "Циклическая зависимость"
-            isOneTime || event.isOneTime->
-                "Одноразовый ивент не может иметь цепочек"
-            else ->
-                null
-        }
-
-    private fun checkAllForOneTimeEvent() =
-        when {
-            prev != null || next != null ->
-                "Одноразовый ивент не может иметь цепочек"
-            else ->
-                null
-        }
+    }
 
     private val kClass = this::class
     private val members = this::class.members

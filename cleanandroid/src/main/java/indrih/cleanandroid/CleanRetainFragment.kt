@@ -12,6 +12,7 @@ import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import org.jetbrains.anko.AnkoLogger
+import indrih.cleanandroid.AbstractEvent.ShowMode.*
 
 /**
  * Базовая реализация Fragment-а, от которой нужно наследовать все остальные Fragment-ы.
@@ -55,25 +56,25 @@ abstract class CleanRetainFragment<Event, Presenter> :
         super.onCreate(savedInstanceState)
         retainInstance = true
         if (writeToLog)
-            log("fragment created")
+            logMessage("fragment created")
     }
 
     override fun onResume() {
         super.onResume()
         presenter.attachView(this)
         if (writeToLog) 
-            log("view attached")
+            logMessage("view attached")
     }
 
     override fun onPause() {
         super.onPause()
         presenter.detachView()
         if (writeToLog)
-            log("view detached")
+            logMessage("view detached")
         if (isRemoving) {
             presenter.onCleared()
             if (writeToLog)
-                log("resources cleared")
+                logMessage("resources cleared")
         }
         hideAlert() // чтобы не возникал экзепшен в случае поднятого алерта
     }
@@ -82,7 +83,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
         super.onDestroy()
         presenter.onCleared() // чтобы точно ничего никуда не утекло
         if (writeToLog)
-            log("fragment destroyed")
+            logMessage("fragment destroyed")
     }
 
     abstract fun onBackPressed()
@@ -96,7 +97,8 @@ abstract class CleanRetainFragment<Event, Presenter> :
             hideToast()
         if (alertDialog != null)
             hideAlert()
-        presenter.eventIsCommitted(event)
+        if (event.showMode !is EveryTime)
+            presenter.eventIsCommitted(event)
     }
 
     private var toast: Toast? = null
@@ -111,7 +113,8 @@ abstract class CleanRetainFragment<Event, Presenter> :
         toast = Toast.makeText(context, message, duration).also {
             it.show()
         }
-        presenter.eventIsCommitted(event)
+        if (event.showMode !is EveryTime)
+            presenter.eventIsCommitted(event)
     }
 
     private fun hideToast() {
@@ -144,14 +147,16 @@ abstract class CleanRetainFragment<Event, Presenter> :
             onOkButtonClick?.let {
                 setPositiveButton(okButtonText) { _, _ ->
                     it.invoke()
-                    presenter.eventIsCommitted(event)
+                    if (event.showMode !is EveryTime)
+                        presenter.eventIsCommitted(event)
                 }
             }
 
             onNoButtonClick?.let {
                 setNegativeButton(noButtonTest) { _, _ ->
                     it.invoke()
-                    presenter.eventIsCommitted(event)
+                    if (event.showMode !is EveryTime)
+                        presenter.eventIsCommitted(event)
                 }
             }
         }.show()
@@ -169,11 +174,15 @@ abstract class CleanRetainFragment<Event, Presenter> :
     protected fun showKeyboard(event: Event) {
         val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+        if (event.showMode !is EveryTime)
+            presenter.eventIsCommitted(event)
     }
 
     protected fun hideKeyboard(event: Event) {
         val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(activity?.currentFocus?.windowToken, 0)
+        if (event.showMode !is EveryTime)
+            presenter.eventIsCommitted(event)
     }
 
     /*

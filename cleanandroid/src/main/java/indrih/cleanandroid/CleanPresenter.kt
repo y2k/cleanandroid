@@ -4,6 +4,7 @@ import androidx.annotation.CallSuper
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import org.jetbrains.anko.AnkoLogger
+import indrih.cleanandroid.AbstractEvent.ShowMode.*
 
 /**
  * Базовая реализация Presenter-а, от которой нужно наследовать все остальные Presenter-ы.
@@ -37,20 +38,20 @@ abstract class CleanPresenter<Event, Router>(
         }
         buffer.forEach(view::notify)
         if (writeToLog)
-            log("attachView")
+            logMessage("attachView")
     }
 
     @CallSuper
     override fun onFirstAttached() {
         if (writeToLog)
-            log("onFirstAttached")
+            logMessage("onFirstAttached")
     }
 
     @CallSuper
     override fun detachView() {
         view = null
         if (writeToLog)
-            log("detachView")
+            logMessage("detachView")
     }
 
     @CallSuper
@@ -58,7 +59,7 @@ abstract class CleanPresenter<Event, Router>(
         buffer.clear()
         coroutineContext.cancelChildren()
         if (writeToLog)
-            log("onCleared")
+            logMessage("onCleared")
     }
 
     /**
@@ -66,10 +67,19 @@ abstract class CleanPresenter<Event, Router>(
      * зачем создавались, и не нуждаются в повторном отображении.
      */
     override fun eventIsCommitted(event: Event) {
-        if (event.prev != null && event.next == null)
-            deleteChain(event)
-        else if (!event.isOneTime)
-            buffer.removeAll { it.equalEvent(event) }
+        val showMode = event.showMode
+        when (showMode) {
+            is Chain -> {
+                if (showMode.isEnd())
+                    deleteChain(event, showMode)
+            }
+            is Once -> {
+                buffer.removeAllEqual(event)
+            }
+            is EveryTime -> {
+                logError("Попытка удалить постоянное уведомление")
+            }
+        }
     }
 
     /**
@@ -78,32 +88,34 @@ abstract class CleanPresenter<Event, Router>(
      * не произойдёт. Буфер ивентов отчищается от уже поступивших ивентов подобного рода.
      */
     @CallSuper
-    protected fun notifyUI(event: Event) {
-        if (event.isOneTime) {
-            view?.notify(event)
-            if (writeToLog)
-                log("notifyUI: $event")
-        } else {
-            buffer.removeAll { it.equalEvent(event) }
-            buffer.add(event)
-            view?.notify(event)
-            if (writeToLog)
-                log("notifyUI: $event")
+    protected fun notifyUI(event: Event, showMode: AbstractEvent.ShowMode) {
+        event.showMode = showMode
 
-            if (event.prev != null && event.next == null)
-                deleteChain(event)
+        buffer.removeAllEqual(event)
+        buffer.add(event)
+        view?.notify(event)
+        if (writeToLog)
+            logMessage("notifyUI: $event")
+
+        when (showMode) {
+            is Chain ->
+                if (showMode.isEnd())
+                    deleteChain(event, showMode)
+            is Once ->
+                if (buffer.contains(event))
+                    buffer.removeAllEqual(event)
         }
     }
 
     /**
      * Рекурсивно дропает всю цепочку событий, начиная с конца.
      */
-    private fun deleteChain(event: AbstractEvent) {
-        buffer.removeAll { it.equalEvent(event) }
+    private fun deleteChain(event: AbstractEvent, chain: Chain) {
+        buffer.removeAllEqual(event)
         if (writeToLog)
             println("deleteChain: $event")
-        event.prev?.let {
-            deleteChain(it)
+        chain.prev?.let {
+            deleteChain(it, it.showMode as Chain)
         }
     }
 
