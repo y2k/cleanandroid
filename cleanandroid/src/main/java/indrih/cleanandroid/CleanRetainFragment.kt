@@ -108,12 +108,16 @@ abstract class CleanRetainFragment<Event, Presenter> :
      * вывода информации на экран.
      */
     protected fun showToast(message: String, event: Event, duration: Int = Toast.LENGTH_SHORT) {
+        val showMode = event.showMode
+        if (showMode is Once)
+            showMode.autoRemoval = false
+
         if (toast != null)
             hideToast()
         toast = Toast.makeText(context, message, duration).also {
             it.show()
         }
-        if (event.showMode !is EveryTime)
+        if (showMode !is EveryTime)
             presenter.eventIsCommitted(event)
     }
 
@@ -140,7 +144,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
     ) {
         val showMode = event.showMode
         if (showMode is Once)
-            showMode.autoremoval = false
+            showMode.autoRemoval = false
 
         alertDialog?.dismiss()
         alertDialog = AlertDialog.Builder(requireContext()).apply {
@@ -176,16 +180,24 @@ abstract class CleanRetainFragment<Event, Presenter> :
      */
 
     protected fun showKeyboard(event: Event) {
+        val showMode = event.showMode
+        if (showMode is Once)
+            showMode.autoRemoval = false
+
         val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
-        if (event.showMode !is EveryTime)
+        if (showMode !is EveryTime)
             presenter.eventIsCommitted(event)
     }
 
     protected fun hideKeyboard(event: Event) {
+        val showMode = event.showMode
+        if (showMode is Once)
+            showMode.autoRemoval = false
+
         val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(activity?.currentFocus?.windowToken, 0)
-        if (event.showMode !is EveryTime)
+        if (showMode !is EveryTime)
             presenter.eventIsCommitted(event)
     }
 

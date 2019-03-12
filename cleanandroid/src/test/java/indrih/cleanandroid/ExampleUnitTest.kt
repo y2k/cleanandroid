@@ -17,15 +17,12 @@ class Presenter : CleanPresenter<Event, Router>(Router()) {
         writeToLog = true
         notifyUI(
             Event.ShowProgress,
-            showMode = EveryTime
+            showMode = Chain(next = Event.HideProgress)
         )
         notifyUI(
             Event.HideProgress,
-            showMode = Once
+            showMode = Chain(prev = Event.ShowProgress)
         )
-
-        eventIsCommitted(Event.ShowProgress)
-        eventIsCommitted(Event.HideProgress)
     }
 }
 

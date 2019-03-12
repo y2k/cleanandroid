@@ -102,7 +102,7 @@ abstract class CleanPresenter<Event, Router>(
                 if (showMode.isEnd())
                     deleteChain(event, showMode)
             is Once ->
-                if (buffer.contains(event) && showMode.autoremoval)
+                if (buffer.contains(event) && showMode.autoRemoval)
                     buffer.removeAllEqual(event)
         }
     }
@@ -113,7 +113,7 @@ abstract class CleanPresenter<Event, Router>(
     private fun deleteChain(event: AbstractEvent, chain: Chain) {
         buffer.removeAllEqual(event)
         if (writeToLog)
-            println("deleteChain: $event")
+            logMessage("deleteChain: $event")
         chain.prev?.let {
             deleteChain(it, it.showMode as Chain)
         }

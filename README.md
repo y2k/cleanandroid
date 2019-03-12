@@ -1,28 +1,62 @@
 # CleanAndroid
 ## Предисловие
 Данная библиотека является аналогом Moxy и не призвана полностью её заменить. 
-Эта библиотека задумывалась как более лёгкий аналог, с меньшим количеством возможностей и без кодогенерации.
+Эта библиотека задумывалась как более лёгкий аналог, с меньшим количеством 
+возможностей и без кодогенерации.
 Так же, тут из коробки поддерживается простой менеджмент жизненного цикла корутин.
-Моё более подробное видение архитектуры можно найти в [CleanContract](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/CleanContract.kt).
+Моё более подробное видение архитектуры можно найти в 
+[CleanContract](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/CleanContract.kt).
 
 ## Идеология
-Я придерживаюсь идеи программирования на уровне интерфейсов. По моим убеждениям, контракты должны быть описаны для каждого экрана.
+Я придерживаюсь идеи программирования на уровне интерфейсов. 
+По моим убеждениям, контракты должны быть описаны для каждого экрана.
 Вам не обязательно делать всё то, что делаю я, чтобы успешно пользоваться CleanAndroid.
 
 Но парочку своих принципов я всё же навязываю:
-* Навигацией между экранами должна заниматься отдельная сущность (Router). Не View и не Presenter. Presenter лишь может командовать роутером.
-* После ухода с текущего экрана на другой экран все запущенные корутины должны быть остановлены. Если хотите бекграунд - сервисы Вам в руки. :)
+* Навигацией между экранами должна заниматься отдельная сущность (Router). 
+Не View и не Presenter. Presenter лишь может командовать роутером.
+* После ухода с текущего экрана на другой экран все запущенные корутины 
+должны быть остановлены. Если хотите бекграунд - сервисы Вам в руки. :)
 * Корутины не должны запускаться в Activity/Fragment.
 
 ## Необходимые подробности
 * По умолчанию базовый фрагмент - retain. 
-* Presenter указывает View что необходимо отобразить с помощью [Event](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractEvent.kt).
-* Если вам нужно запускать некоторый код при каждом attach/detach презентера, положите этот код в методы `attachView` и `detachView`.
-Если же действия нужно совершить при первом поключении или в момент отчистки ресурсов, положите код в методы `onFirstAttached` и `onCleared`.
+* Presenter указывает View что необходимо отобразить с помощью 
+[Event](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractEvent.kt).
+* Если вам нужно запускать некоторый код при каждом attach/detach презентера, 
+положите этот код в методы `attachView` и `detachView`.
+Если же действия нужно совершить при первом поключении или в момент 
+отчистки ресурсов, положите код в методы `onFirstAttached` и `onCleared`.
 
-## Примеры кода
-### На стороне контракта
-Создаём Event, который будет содержать общие команды для всех экранов:
+## Правильный менеджемент корутин
+#### На стороне Презентера
+По умолчанию запуск идёт в `Main`.
+```
+launch {
+    val userList = interactor.selectAllUsers()
+    notifyUI(SetOnDisplay(userList))
+}
+```
+#### На стороне Интерактора
+По умолчанию запуск идёт в `Default`.
+```
+fun selectAllUsers() = def { 
+    gateway.selectAllUsers()
+} 
+```
+
+Или если Вам нужно запускать несколько параллельных корутин
+```
+fun selectAllUsers() = coroutineScope { 
+    launch(standardContext) {
+        // ...
+    }
+} 
+```
+
+## Events
+#### На стороне контракта
+Создаём базовый Event, который будет содержать общие команды для всех экранов:
 ```
 sealed class MainEvent : CleanContract.AbstractEvent() {
     object ShowKeyboard : MainEvent()
@@ -44,7 +78,7 @@ sealed class Event : CleanContract.AbstractEvent() {
 }
 ```
 
-### На стороне Фрагмента
+#### На стороне Фрагмента
 Добавляем в свой главный абстрактный Фрагмент обработку общих событий:
 ```
 fun notifyMain(event: Event, mainEvent: MainEvent) {
@@ -81,14 +115,14 @@ override fun notify(event: Event) {
     }
 }
 ```
-### На стороне Презентера
+#### На стороне Презентера
 * Пример обычного использования
 ```
 launch {
-  notifyUI(ShowProgressBar)
-  val user = interactor.loadUserInfo()
-  notifyUI(HideProgressBar)
-  notifyUI(SetUserInfo(user))
+    notifyUI(ShowProgressBar)
+    val user = interactor.loadUserInfo()
+    notifyUI(HideProgressBar)
+    notifyUI(SetUserInfo(user))
 }
 ```
 
@@ -106,54 +140,64 @@ if (event != null) {
     notifyUI(Main(ShowKeyboard))
     notifyUI(event) 
 } else {
-    createUser(surname, name)
+    interactor.createUser(surname, name)
     notifyUI(SavingCompleted)
 }
 ```
 
-## Отменяемость и самоуничтожаемость событий
-Некоторые Event-ы нужно обработать лишь раз: например, установка параметров.
-Пользователь может поменять эти параметры, а затем повернёт телефон - и если Event с параметрами 
-не будет отменён - он автоматически заменит новые данные на старые.
-Что же делать? Отменять Event после того как он выполнил своё назначение.
+## Жизненный цикл событий
+У функции `notifyUI` есть параметр `showMode`, который отвечает за то, 
+сколько будут жить события.
 
-Как? Если несколько вариантов:
+1) Once (используется по умолчанию) - такие события должны быть удалены 
+сразу после завершения того, зачем они были созданы. 
+Если используются встроенные методы `showAlert`, `showKeyboard` и т.д., 
+то события будут удалены когда информация будет доставлена до пользователя.
 
-1) [CleanPresenter.eventIsCommitted](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/CleanPresenter.kt#L68) 
-- вы можете в любой удобный для вас момент удалить событие.
-2) [AbstractEvent.isOneTime](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractEvent.kt#L42) 
-- при описании объекта/класса, реализующего некоторый Event, 
-установить этот параметр true - тогда событие не будет сохраняться в буфер.
-```
-sealed class Event : AbstractEvent() {
-    object Foo : Event() {
-        init { isOneTime = true }
-    }
-}
-```
+   Имеет флаг `autoRemoval` - если `true` (флаг по умолчанию),
+   то после вывода на экран такие события будут удалены автоматически 
+   (за исключением тех, что будут переданы в `showAlert` и т.д.). 
+   Если Вы хотите вручную отчищать событие (это можно сделать с помощью
+   `CleanPresenter.eventIsCommitted`) - установите значение `false`.
 
-3) Есть ещё вариант организовать цепочку событий 
-[AbstractEvent.next & prev](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractEvent.kt#L16)
-. Но этот вариант имеет несколько нюансов:
+2) EveryTime - такие события будут воспроизводиться при каждом подключении View к Presenter
+   и удалить их **нельзя**.
+3) Chain - цепочка событий.
+ 
+   Этот вариант имеет несколько нюансов:
 
    a) он может использоваться только с объектами.
 
    b) чем длиннее цепочка, тем больше шансов ошибиться и поставить не тот параметр в цепочку.
 
-   Но тем не менее, иногда этот вариант удобен, к примеру:
-   у вас есть два Event - ShowProgress и HideProgress. Вы организовываете их в цепочку
-   (Цепочка подобна связанным спискам):
+   c) Любая опечатка будет стоить Вам жизни. :)
+
+   Но тем не менее, иногда этот вариант удобен. К примеру:
+   у Вас есть два Event - ShowProgress и HideProgress:
    ```
    sealed class Event : AbstractEvent() {
-       object ShowProgress : Event() {
-           init { next = HideProgress }
-       }
-       object HideProgress : Event() {
-           init { prev = ShowProgress }
-       }
+       object ShowProgress : Event()
+       
+       object HideProgress : Event() 
    }
    ```
 
-   Сначала вы отправляете на отображение ShowProgress, пользователь поворачивает устройство,
-   этот Event восстанавливается из буфера. Как только приходит HideProgress - он идёт на отображение, 
-   а затем они вместе с ShowProgress удаляются из буфера. Цепочку можно организовать любой длины.
+   Вы организовываете их в цепочку (Цепочка подобна связанным спискам):
+   ```
+   notifyUI(
+       Event.ShowProgress,
+       showMode = Chain(next = Event.HideProgress)
+   )
+   // ...
+   notifyUI(
+       Event.HideProgress,
+       showMode = Chain(prev = Event.ShowProgress)
+   )
+   ```
+
+   Сначала отправляется на отображение ShowProgress, пользователь
+   поворачивает устройство, этот Event восстанавливается из буфера. 
+   Как только приходит HideProgress - он идёт на отображение, а затем 
+   они вместе с ShowProgress удаляются из буфера. 
+   
+   Цепочку можно организовать любой длины.
