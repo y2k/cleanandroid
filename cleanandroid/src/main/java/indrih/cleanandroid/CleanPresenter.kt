@@ -102,7 +102,7 @@ abstract class CleanPresenter<Event, Router>(
                 if (showMode.isEnd())
                     deleteChain(event, showMode)
             is Once ->
-                if (buffer.contains(event))
+                if (buffer.contains(event) && showMode.autoremoval)
                     buffer.removeAllEqual(event)
         }
     }

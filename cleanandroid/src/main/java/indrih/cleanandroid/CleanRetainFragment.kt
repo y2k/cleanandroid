@@ -138,6 +138,10 @@ abstract class CleanRetainFragment<Event, Presenter> :
         onNoButtonClick: EventButtonClick?,
         cancelable: Boolean = true
     ) {
+        val showMode = event.showMode
+        if (showMode is Once)
+            showMode.autoremoval = false
+
         alertDialog?.dismiss()
         alertDialog = AlertDialog.Builder(requireContext()).apply {
             setMessage(message)
@@ -147,7 +151,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
             onOkButtonClick?.let {
                 setPositiveButton(okButtonText) { _, _ ->
                     it.invoke()
-                    if (event.showMode !is EveryTime)
+                    if (showMode !is EveryTime)
                         presenter.eventIsCommitted(event)
                 }
             }
@@ -155,7 +159,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
             onNoButtonClick?.let {
                 setNegativeButton(noButtonTest) { _, _ ->
                     it.invoke()
-                    if (event.showMode !is EveryTime)
+                    if (showMode !is EveryTime)
                         presenter.eventIsCommitted(event)
                 }
             }
