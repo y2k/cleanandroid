@@ -6,8 +6,7 @@ import java.lang.Exception
  * Создаваемые ивенты должны наследовать этот абстрактный класс.
  */
 abstract class AbstractEvent {
-    lateinit var showMode: ShowMode
-        internal set
+    internal lateinit var showMode: ShowMode
 
     /**
      * Режимы отображения Event-а.

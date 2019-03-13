@@ -35,8 +35,9 @@ abstract class CleanPresenter<Event, Router>(
         if (firstAttached) {
             onFirstAttached()
             firstAttached = false
+        } else {
+            buffer.forEach(view::notify)
         }
-        buffer.forEach(view::notify)
         if (writeToLog)
             logMessage("attachView")
     }

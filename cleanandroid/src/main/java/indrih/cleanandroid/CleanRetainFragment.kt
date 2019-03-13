@@ -32,7 +32,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
 
     protected abstract val presenterFactory: () -> Presenter // на всякий случай, вдруг я решу изменить место создания презентера
 
-    protected val presenter: Presenter by lazy {
+    protected open val presenter: Presenter by lazy {
         presenterFactory()
     }
 
@@ -41,6 +41,13 @@ abstract class CleanRetainFragment<Event, Presenter> :
     private var _view: View? = null
 
     protected var writeToLog = false
+
+    /**
+     * Если вы сами установите этот флаг в состояние `false` - вам самим придётся
+     * обрабатывать сохранение [presenter]-а от пересоздания и закрывать ресурсы в
+     * [CleanPresenter.onCleared].
+     */
+    protected var isRetain = true
 
     protected fun LayoutInflater.inflate(
         @LayoutRes resource: Int,
@@ -54,7 +61,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
+        retainInstance = isRetain
         if (writeToLog)
             logMessage("fragment created")
     }
@@ -71,7 +78,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
         presenter.detachView()
         if (writeToLog)
             logMessage("view detached")
-        if (isRemoving) {
+        if (isRemoving && isRetain) {
             presenter.onCleared()
             if (writeToLog)
                 logMessage("resources cleared")
@@ -81,7 +88,8 @@ abstract class CleanRetainFragment<Event, Presenter> :
 
     override fun onDestroy() {
         super.onDestroy()
-        presenter.onCleared() // чтобы точно ничего никуда не утекло
+        if (isRetain)
+            presenter.onCleared() // чтобы точно ничего никуда не утекло
         if (writeToLog)
             logMessage("fragment destroyed")
     }
