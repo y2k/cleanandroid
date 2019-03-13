@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'androidx.navigation.safeargs'
 
 android {
     compileSdkVersion 28
@@ -39,6 +40,10 @@ dependencies {
     // Anko
     implementation "org.jetbrains.anko:anko:$ankoVersion"
     implementation "org.jetbrains.anko:anko-appcompat-v7:$ankoVersion"
+
+    // Navigation
+    implementation "android.arch.navigation:navigation-fragment:$navVersion"
+    implementation "android.arch.navigation:navigation-ui:$navVersion"
 }
 
 repositories {

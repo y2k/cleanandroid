@@ -62,6 +62,11 @@ abstract class CleanRetainFragment<Event, Presenter> :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = isRetain
+
+        val controller = (activity as? CleanActivity)?.navController
+            ?: throw IllegalStateException("")
+        presenter.attachNavData(controller)
+
         if (writeToLog)
             logMessage("fragment created")
     }
@@ -69,7 +74,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
     override fun onResume() {
         super.onResume()
         presenter.attachView(this)
-        if (writeToLog) 
+        if (writeToLog)
             logMessage("view attached")
     }
 
@@ -90,11 +95,18 @@ abstract class CleanRetainFragment<Event, Presenter> :
         super.onDestroy()
         if (isRetain)
             presenter.onCleared() // чтобы точно ничего никуда не утекло
+
         if (writeToLog)
             logMessage("fragment destroyed")
     }
 
     abstract fun onBackPressed()
+
+    protected inline fun <reified T : Any> getArg(name: String? = null): T =
+        MainRouter.getArg(name)
+
+    protected fun getAllArgs(): HashMap<String, Any> =
+        MainRouter.getAllArgs()
 
     /*
      ************************* Информация на экране *************************

@@ -1,5 +1,7 @@
 package indrih.cleanandroid
 
+import androidx.navigation.NavController
+
 /**
  * Базовый, обобщающий контракт для всех остальных контрактов.
  * Контракт обеспечивает связи View <-> Presenter -> Interactor -> Gateway.
@@ -35,6 +37,11 @@ interface CleanContract {
         fun onFirstAttached()
 
         /**
+         * Добавляет указанный [NavController] для навигации.
+         */
+        fun attachNavData(navController: NavController)
+
+        /**
          * Вызывается когда View больше не отображется.
          */
         fun detachView()
@@ -67,12 +74,4 @@ interface CleanContract {
      * Коротко говоря - абстрактный источник данных.
      */
     interface Gateway
-
-    /**
-     * Роутер для каждого экрана.
-     * Каждый экран должен иметь свой роутер с функциями перехода к
-     * другим экранам. Такой подход позволяет для каждого экрана прописать
-     * и использовать только те переходы, которые ему доступны.
-     */
-    interface Router
 }

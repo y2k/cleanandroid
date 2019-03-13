@@ -1,6 +1,7 @@
 package indrih.cleanandroid
 
 import androidx.annotation.CallSuper
+import androidx.navigation.NavController
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import org.jetbrains.anko.AnkoLogger
@@ -12,14 +13,12 @@ import indrih.cleanandroid.AbstractEvent.ShowMode.*
  * Все корутины, запускаемые в наследниках этого класса, будут остановлены как только будет
  * вызван метод [onCleared].
  */
-abstract class CleanPresenter<Event, Router>(
-    val router: Router
-) :
+abstract class CleanPresenter<Event, Screen> :
     CoroutineScope,
     CleanContract.Presenter<Event>,
     AnkoLogger
         where Event : AbstractEvent,
-              Router : CleanContract.Router
+              Screen : IScreen
 {
     protected var writeToLog = false
 
@@ -42,6 +41,12 @@ abstract class CleanPresenter<Event, Router>(
             logMessage("attachView")
     }
 
+    private var navController: NavController? = null
+
+    override fun attachNavData(navController: NavController) {
+        this.navController = navController
+    }
+
     @CallSuper
     override fun onFirstAttached() {
         if (writeToLog)
@@ -59,6 +64,7 @@ abstract class CleanPresenter<Event, Router>(
     override fun onCleared() {
         buffer.clear()
         coroutineContext.cancelChildren()
+        navController = null
         if (writeToLog)
             logMessage("onCleared")
     }
@@ -81,6 +87,10 @@ abstract class CleanPresenter<Event, Router>(
                 logError("Попытка удалить постоянное уведомление")
             }
         }
+    }
+
+    protected fun <S : Screen> navigateTo(screen: S) {
+        MainRouter.navigate(screen, requireNotNull(navController))
     }
 
     /**
