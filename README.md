@@ -1,4 +1,25 @@
 # CleanAndroid
+## Установка
+Текущая версия
+```
+clean_android_version = '1.0.0'
+```
+
+Зависимости
+```
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://jitpack.io" }
+    }
+}
+
+dependencies {
+    implementation 'com.github.indrih17:cleanandroid:$clean_android_version'
+}
+```
+
+
 ## Предисловие
 Данная библиотека является аналогом Moxy и не призвана полностью её заменить. 
 Эта библиотека задумывалась как более лёгкий аналог, с меньшим количеством 
