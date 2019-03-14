@@ -2,4 +2,7 @@
     <string name="app_name">cleanandroid</string>
     <string name="ok">Ок</string>
     <string name="cancel">Отмена</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
