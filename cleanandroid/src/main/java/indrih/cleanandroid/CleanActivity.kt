@@ -9,6 +9,13 @@ import org.jetbrains.anko.AnkoLogger
 abstract class CleanActivity : AppCompatActivity(), NavHost, AnkoLogger {
     protected var writeToLog = false
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (writeToLog)
+            logMessage("onCreate")
+        instance = this
+    }
+
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         super.onCreate(savedInstanceState, persistentState)
         if (writeToLog)
@@ -27,9 +34,7 @@ abstract class CleanActivity : AppCompatActivity(), NavHost, AnkoLogger {
         private var instance: CleanActivity? = null
 
         fun navigate(res: Int) {
-            instance?.navController?.navigate(res) ?: run {
-                logError("instance == null")
-            }
+            instance?.navController?.navigate(res)
         }
     }
 }

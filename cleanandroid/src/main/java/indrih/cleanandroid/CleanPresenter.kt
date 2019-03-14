@@ -34,8 +34,9 @@ abstract class CleanPresenter<Event, Screen> :
         if (firstAttached) {
             onFirstAttached()
             firstAttached = false
+        } else {
+            buffer.forEach(view::notify)
         }
-        buffer.forEach(view::notify)
 
         if (writeToLog)
             logMessage("attachView")
