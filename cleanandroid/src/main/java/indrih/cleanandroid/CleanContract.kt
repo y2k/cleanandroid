@@ -1,7 +1,5 @@
 package indrih.cleanandroid
 
-import androidx.navigation.NavController
-
 /**
  * Базовый, обобщающий контракт для всех остальных контрактов.
  * Контракт обеспечивает связи View <-> Presenter -> Interactor -> Gateway.
@@ -35,11 +33,6 @@ interface CleanContract {
          * При смене конфигурации вызываться не будет.
          */
         fun onFirstAttached()
-
-        /**
-         * Добавляет указанный [NavController] для навигации.
-         */
-        fun attachNavData(navController: NavController)
 
         /**
          * Вызывается когда View больше не отображется.

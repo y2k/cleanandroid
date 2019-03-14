@@ -18,7 +18,7 @@ abstract class CleanPresenter<Event, Screen> :
     CleanContract.Presenter<Event>,
     AnkoLogger
         where Event : AbstractEvent,
-              Screen : IScreen
+              Screen : AbstractScreen
 {
     protected var writeToLog = false
 
@@ -41,12 +41,6 @@ abstract class CleanPresenter<Event, Screen> :
             logMessage("attachView")
     }
 
-    private var navController: NavController? = null
-
-    override fun attachNavData(navController: NavController) {
-        this.navController = navController
-    }
-
     @CallSuper
     override fun onFirstAttached() {
         if (writeToLog)
@@ -64,7 +58,6 @@ abstract class CleanPresenter<Event, Screen> :
     override fun onCleared() {
         buffer.clear()
         coroutineContext.cancelChildren()
-        navController = null
         if (writeToLog)
             logMessage("onCleared")
     }
@@ -90,8 +83,14 @@ abstract class CleanPresenter<Event, Screen> :
     }
 
     protected fun <S : Screen> navigateTo(screen: S) {
-        MainRouter.navigate(screen, requireNotNull(navController))
+        MainRouter.navigate(screen)
     }
+
+    protected inline fun <reified T : Any> getArg(name: String? = null): T =
+        MainRouter.getArg(name)
+
+    protected fun getAllArgs(): HashMap<String, Any> =
+        MainRouter.getAllArgs()
 
     /**
      * Сюда поступают ивенты, которые должны быть восстановлены после смены конфигурации.

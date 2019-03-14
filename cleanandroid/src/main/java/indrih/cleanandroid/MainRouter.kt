@@ -1,6 +1,5 @@
 package indrih.cleanandroid
 
-import androidx.navigation.NavController
 import java.lang.Exception
 
 object MainRouter {
@@ -28,12 +27,9 @@ object MainRouter {
         return map1
     }
 
-    fun <Screen : IScreen> navigate(
-        screen: Screen,
-        navController: NavController
-    ) {
+    fun <Screen : AbstractScreen> navigate(screen: Screen) {
         map.clear()
-        map += HashMap(screen.pairs)
-        navController.navigate(screen.action)
+        map += screen.map
+        CleanActivity.navigate(screen.action)
     }
 }
