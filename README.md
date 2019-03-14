@@ -13,19 +13,26 @@
 Вам не обязательно делать всё то, что делаю я, чтобы успешно пользоваться CleanAndroid.
 
 Но парочку своих принципов я всё же навязываю:
-* Навигацией между экранами должна заниматься отдельная сущность (Router). 
-Не View и не Presenter. Presenter лишь может командовать роутером.
 * После ухода с текущего экрана на другой экран все запущенные корутины 
 должны быть остановлены. Если хотите бекграунд - сервисы Вам в руки. :)
 * Корутины не должны запускаться в Activity/Fragment.
+* Presenter должен получать зависимости, переданные с предыдущего экрана,
+а не View.
 
 ## Необходимые подробности
 * Presenter указывает View что необходимо отобразить с помощью 
 [Event](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractEvent.kt).
+* Стандартная навигация между экранами предполагает использование 
+`Navigation Component`.
+* Переход между экранами осуществляется передачей наследников 
+[AbstractScreen](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractScreen.kt)
 * Если вам нужно запускать некоторый код при каждом attach/detach презентера, 
 положите этот код в методы `attachView` и `detachView`.
 Если же действия нужно совершить при первом поключении или в момент 
 отчистки ресурсов, положите код в методы `onFirstAttached` и `onCleared`.
+* Ваше Activity должно наследоваться от `CleanActivity`.
+* Ваши Fragment-ы должны наследоваться от `CleanRetainFragment`.
+* Ваши Presenter-ы должны наследоваться от `CleanPresenter`.
 
 ## Ответственность и возможности базовых сущностей
 * `CleanRetainFragment` - базовый абстрактный Фрагмент, передающий 
@@ -48,6 +55,9 @@
    и отчищает буфер событий.
    3) Самостоятельно следит за жизненным циклом Event-ов (только если Вы
    не укажите явно, что хотите делать это сами).
+   4) Скрыто работает со скрытым Router-ом, передавая ему необходимые параметры
+   при передаче между экранами.
+   5) Получает зависимость от Router-а.
 
 * `CleanInteractor` - очень тонкий абстрактный класс. Имеет лишь 
 одну проперти `standardContext = Dispatchers.Default` и один 
@@ -245,3 +255,49 @@ if (event != null) {
    они вместе с ShowProgress удаляются из буфера. 
    
    Цепочку можно организовать любой длины.
+   
+## Передача аргументов
+1) Объявляем Screen для нужного экрана, передавая необходимые данные
+в базовый `AbstractScreen`:
+   ```
+   sealed class Screen(action: Int, vararg pairs: Pair<String, Any>) : AbstractScreen(action, *pairs) {
+      // без параметров
+      object DeviceList : Screen(
+          R.id.action_deviceAddFragment_to_deviceListFragment
+      )
+   
+      // с параметрами
+      class StmParamsAdd(device: Device) : Screen(
+          R.id.action_deviceAddFragment_to_stmParamsAddFragment,
+          "device" to device
+      )
+   }
+   ```
+   
+2) Когда создаём Presenter для данного экрана, передаём в `CleanPresenter`
+`sealed`-класс в виде дженерика.
+
+3) Для перехода на нужный экран в Presenter-е вызываем:
+   ```
+   // без параметров
+   navigateTo(DeviceList)
+   
+   // с параметрами
+   navigateTo(StmParamsEdit(device))
+   ```
+   
+4) Для получения переданных зависимостей в Presenter-е:
+   ```
+   val device: Device = getArg()
+   ```
+   
+   Если же вы передаёте несколько зависимостей одинакового типа:
+   ```
+   val device1: Device = getArg("device1")
+   val device2: Device = getArg("device2")
+   ```
+   
+   Но можно получить все аргументы без приведений типов
+   ```
+   val args: HashMap<String, Any> = getAllArgs()
+   ```
