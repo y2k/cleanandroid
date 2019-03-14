@@ -46,7 +46,7 @@ dependencies {
 * Стандартная навигация между экранами предполагает использование 
 `Navigation Component`.
 * Переход между экранами осуществляется передачей наследников 
-[AbstractScreen](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractScreen.kt)
+[AbstractScreen](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/AbstractScreen.kt).
 * Если вам нужно запускать некоторый код при каждом attach/detach презентера, 
 положите этот код в методы `attachView` и `detachView`.
 Если же действия нужно совершить при первом поключении или в момент 
@@ -64,7 +64,7 @@ dependencies {
    Внимание: по умолчанию флаг `isRetain = true`. Фрагмент будет 
    сам заботиться о том, чтобы сообщить `Presenter`-у о необходимости
    отчистить ресурсы. Если же Вы хотите чтобы определённый Фрагмент был
-   не `retainInstance` - вы можете в блоке `init` указать значение `false`,
+   не `retainInstance` - Вы можете в блоке `init` указать значение `false`,
    но учтите, что Вам самим придётся сохранять Presenter от пересоздания,
    а так же самим уведомлять об отчистке.
 
@@ -76,9 +76,9 @@ dependencies {
    и отчищает буфер событий.
    3) Самостоятельно следит за жизненным циклом Event-ов (только если Вы
    не укажите явно, что хотите делать это сами).
-   4) Скрыто работает со скрытым Router-ом, передавая ему необходимые параметры
-   при передаче между экранами.
-   5) Получает зависимость от Router-а.
+   4) Работает со скрытым Router-ом, передавая ему необходимые параметры
+   при навигации между экранами.
+   5) Получает зависимости от Router-а.
 
 * `CleanInteractor` - очень тонкий абстрактный класс. Имеет лишь 
 одну проперти `standardContext = Dispatchers.Default` и один 
@@ -312,7 +312,7 @@ if (event != null) {
    val device: Device = getArg()
    ```
    
-   Если же вы передаёте несколько зависимостей одинакового типа:
+   Если же Вы передаёте несколько зависимостей одинакового типа:
    ```
    val device1: Device = getArg("device1")
    val device2: Device = getArg("device2")
