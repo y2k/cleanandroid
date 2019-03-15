@@ -36,5 +36,13 @@ abstract class CleanActivity : AppCompatActivity(), NavHost, AnkoLogger {
         fun navigate(res: Int) {
             instance?.navController?.navigate(res)
         }
+
+        fun popBackStack() {
+            instance?.navController?.popBackStack()
+        }
+
+        fun popBackStack(destinationId: Int, inclusive: Boolean) {
+            instance?.navController?.popBackStack(destinationId, inclusive)
+        }
     }
 }

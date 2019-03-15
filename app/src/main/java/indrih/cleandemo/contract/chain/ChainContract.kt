@@ -1,11 +1,17 @@
-package indrih.cleanandroid
+package indrih.cleandemo.contract.chain
 
-import indrih.cleanandroid.base.MainFragment
+import indrih.cleanandroid.AbstractEvent
+import indrih.cleanandroid.AbstractScreen
+import indrih.cleanandroid.CleanContract
+import indrih.cleandemo.base.MainFragment
 
-interface Contract : CleanContract {
+interface ChainContract : CleanContract {
     interface View : CleanContract.View<Event>
 
     sealed class Event : AbstractEvent() {
+        object ShowFirst : Event()
+        object ShowSecond : Event()
+        object ShowThird : Event()
 
         /**
          * Оборачиваищий ивент над [MainFragment.MainEvent].
@@ -13,7 +19,9 @@ interface Contract : CleanContract {
         class Main<T : MainFragment.MainEvent>(val main: T) : Event()
     }
 
-    interface Presenter : CleanContract.Presenter<Event>
+    interface Presenter : CleanContract.Presenter<Event> {
+        fun startButtonWasPressed()
+    }
 
     interface Interactor : CleanContract.Interactor
 

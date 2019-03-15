@@ -1,4 +1,4 @@
-package indrih.cleanandroid
+package indrih.cleandemo
 
 import org.junit.Test
 

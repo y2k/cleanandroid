@@ -1,18 +1,21 @@
-package indrih.cleanandroid.presentation.view
+package indrih.cleandemo.presentation.view
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import indrih.cleanandroid.R
-import indrih.cleanandroid.base.MainFragment
-import indrih.cleanandroid.contract.start.StartContract
-import indrih.cleanandroid.presentation.presenter.StartPresenter
+import indrih.cleandemo.R
+import indrih.cleandemo.base.MainFragment
+import indrih.cleandemo.contract.start.StartContract
+import indrih.cleandemo.presentation.presenter.StartPresenter
+import indrih.cleandemo.contract.start.StartContract.Event.*
 import kotlinx.android.synthetic.main.fragment_start.view.*
-import indrih.cleanandroid.contract.start.StartContract.Event.*
 
-class StartFragment : MainFragment<StartContract.Event, StartPresenter>() {
-    override val presenterFactory: () -> StartPresenter = {
+class StartFragment :
+    StartContract.View,
+    MainFragment<StartContract.Event, StartContract.Presenter>()
+{
+    override val presenterFactory: () -> StartContract.Presenter = {
         StartPresenter()
     }
 
@@ -40,8 +43,5 @@ class StartFragment : MainFragment<StartContract.Event, StartPresenter>() {
             is Main<*> ->
                 notifyMain(event, event.main)
         }
-    }
-
-    override fun onBackPressed() {
     }
 }

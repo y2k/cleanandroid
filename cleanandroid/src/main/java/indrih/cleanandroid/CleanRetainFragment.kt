@@ -49,7 +49,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
      */
     protected var isRetain = true
 
-    protected fun LayoutInflater.inflate(
+    protected open fun LayoutInflater.inflate(
         @LayoutRes resource: Int,
         container: ViewGroup?,
         attachToRoot: Boolean = false,
@@ -99,13 +99,15 @@ abstract class CleanRetainFragment<Event, Presenter> :
             logMessage("fragment destroyed")
     }
 
-    abstract fun onBackPressed()
+    protected open fun popBackStack() {
+        presenter.popBackStack()
+    }
 
     /*
      ************************* Информация на экране *************************
      */
 
-    protected fun hideNotifyEvent(event: Event) {
+    protected open fun hideNotifyEvent(event: Event) {
         if (toast != null)
             hideToast()
         if (alertDialog != null)
@@ -120,7 +122,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
      * @param event экземпляр события, которое больше не нуждается в отображении после
      * вывода информации на экран.
      */
-    protected fun showToast(message: String, event: Event, duration: Int = Toast.LENGTH_SHORT) {
+    protected open fun showToast(message: String, event: Event, duration: Int = Toast.LENGTH_SHORT) {
         val showMode = event.showMode
         if (showMode is Once)
             showMode.autoRemoval = false
@@ -134,7 +136,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
             presenter.eventIsCommitted(event)
     }
 
-    private fun hideToast() {
+    protected open fun hideToast() {
         toast?.cancel()
         toast = null
     }
@@ -145,7 +147,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
      * @param event экземпляр события, которое больше не нуждается в отображении после
      * вывода информации на экран.
      */
-    protected fun showAlert(
+    protected open fun showAlert(
         message: String,
         event: Event,
         title: String? = null,
@@ -168,23 +170,24 @@ abstract class CleanRetainFragment<Event, Presenter> :
             onOkButtonClick?.let {
                 setPositiveButton(okButtonText) { _, _ ->
                     it.invoke()
-                    if (showMode !is EveryTime)
-                        presenter.eventIsCommitted(event)
                 }
             }
 
             onNoButtonClick?.let {
                 setNegativeButton(noButtonTest) { _, _ ->
                     it.invoke()
-                    if (showMode !is EveryTime)
-                        presenter.eventIsCommitted(event)
                 }
+            }
+
+            setOnDismissListener {
+                if (showMode !is EveryTime)
+                    presenter.eventIsCommitted(event)
             }
         }.show()
     }
 
-    private fun hideAlert() {
-        alertDialog?.cancel()
+    protected open fun hideAlert() {
+        alertDialog?.dismiss()
         alertDialog = null
     }
 
@@ -192,7 +195,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
      ************************* Клавиатура *************************
      */
 
-    protected fun showKeyboard(event: Event) {
+    protected open fun showKeyboard(event: Event) {
         val showMode = event.showMode
         if (showMode is Once)
             showMode.autoRemoval = false
@@ -203,7 +206,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
             presenter.eventIsCommitted(event)
     }
 
-    protected fun hideKeyboard(event: Event) {
+    protected open fun hideKeyboard(event: Event) {
         val showMode = event.showMode
         if (showMode is Once)
             showMode.autoRemoval = false
@@ -218,15 +221,15 @@ abstract class CleanRetainFragment<Event, Presenter> :
      ******************************** Экстеншены ********************************
      */
 
-    protected fun View.visible() {
+    protected open fun View.visible() {
         visibility = View.VISIBLE
     }
 
-    protected fun View.invisible() {
+    protected open fun View.invisible() {
         visibility = View.INVISIBLE
     }
 
-    protected fun View.gone() {
+    protected open fun View.gone() {
         visibility = View.GONE
     }
 }

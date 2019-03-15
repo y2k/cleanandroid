@@ -32,4 +32,8 @@ object MainRouter {
         map += screen.map
         CleanActivity.navigate(screen.action)
     }
+
+    fun popBackStack() {
+        CleanActivity.popBackStack()
+    }
 }

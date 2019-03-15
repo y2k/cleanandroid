@@ -10,7 +10,7 @@ android {
     compileSdkVersion(28)
 
     defaultConfig {
-        applicationId = "indrih.cleanandroid"
+        applicationId = "indrih.cleandemo"
 
         minSdkVersion(21)
         targetSdkVersion(28)
@@ -34,13 +34,12 @@ android {
     }
 }
 
-val ankoVersion = "0.10.8"
-val koinVersion = "1.0.2"
-val coroutineVersion = "1.1.1"
-val supportVersion = "1.0.0"
 val supportAppcompatVersion = "1.0.2"
-val navVersion = "1.0.0-rc02"
-val cleanAndroidVersion = "1.0.0"
+val supportVersion = "1.0.0"
+val navVersion = "1.0.0"
+val coroutineVersion = "1.1.1"
+val koinVersion = "1.0.2"
+val ankoVersion = "0.10.8"
 
 dependencies {
     val kotlinVersion = property("kotlinVersion") as String
@@ -78,16 +77,10 @@ dependencies {
     implementation("org.jetbrains.anko:anko-appcompat-v7:$ankoVersion")
 
     // Clean Android library
-    implementation(group = "com.github.indrih17", name = "cleanandroid", version = cleanAndroidVersion)
+    implementation(project(":cleanandroid"))
 
     // Тесты
     testImplementation("junit:junit:4.12")
     androidTestImplementation("androidx.test:runner:1.1.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.1.1")
-}
-
-tasks.withType(KotlinCompile::class) {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-XXLanguage:+InlineClasses", "-Xuse-experimental=kotlin.Experimental")
-    }
 }

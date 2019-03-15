@@ -48,6 +48,11 @@ interface CleanContract {
          * Вызывается [View], когда ивент обработан и вновь вызывать его не нужно.
          */
         fun eventIsCommitted(event: Event)
+
+        /**
+         * Переход на предыдущий фрагмент.
+         */
+        fun popBackStack()
     }
 
     /**

@@ -1,7 +1,7 @@
 plugins {
     id("com.android.library")
-    /*kotlin("android")
-    kotlin("android.extensions")*/
+    kotlin("android")
+    kotlin("android.extensions")
 }
 
 android {
@@ -23,18 +23,15 @@ android {
     }
 }
 
-val ankoVersion = "0.10.8"
-val koinVersion = "1.0.2"
+val navVersion = "1.0.0"
 val coroutineVersion = "1.1.1"
-val supportVersion = "1.0.0"
-val supportAppcompatVersion = "1.0.2"
-val navVersion = "1.0.0-rc02"
-val cleanAndroidVersion = "1.0.0"
+val ankoVersion = "0.10.8"
 
 dependencies {
     val kotlinVersion = property("kotlinVersion") as String
     implementation(fileTree("include" to "*.jar", "dir" to "libs"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
 
     // Navigation
     implementation("android.arch.navigation:navigation-fragment:$navVersion")

@@ -1,4 +1,4 @@
-package indrih.cleanandroid.base
+package indrih.cleandemo.base
 
 import indrih.cleanandroid.AbstractEvent
 import indrih.cleanandroid.CleanContract

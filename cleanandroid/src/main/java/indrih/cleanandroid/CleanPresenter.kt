@@ -1,7 +1,6 @@
 package indrih.cleanandroid
 
 import androidx.annotation.CallSuper
-import androidx.navigation.NavController
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import org.jetbrains.anko.AnkoLogger
@@ -57,10 +56,12 @@ abstract class CleanPresenter<Event, Screen> :
 
     @CallSuper
     override fun onCleared() {
-        buffer.clear()
+        buffer.smartClear()
         coroutineContext.cancelChildren()
-        if (writeToLog)
+        if (writeToLog) {
             logMessage("onCleared")
+            logMessage("Оставшиеся в буфере: $buffer")
+        }
     }
 
     /**
@@ -128,6 +129,10 @@ abstract class CleanPresenter<Event, Screen> :
         chain.prev?.let {
             deleteChain(it, it.showMode as Chain)
         }
+    }
+
+    override fun popBackStack() {
+        MainRouter.popBackStack()
     }
 
     private val job = SupervisorJob()
