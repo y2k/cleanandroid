@@ -1,0 +1,62 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "indrih.cleandemo"
+
+        minSdkVersion 21
+        targetSdkVersion 28
+
+        versionCode 1
+        versionName "1.0.0"
+
+        buildToolsVersion "29.0.0-rc1"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    // KTX
+    implementation("androidx.core:core-ktx:1.0.1")
+
+    // AndroidX
+    implementation "androidx.appcompat:appcompat:$supportAppcompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:2.0.0-alpha3"
+
+    // Navigation
+    implementation "android.arch.navigation:navigation-fragment:$navVersion"
+    implementation "android.arch.navigation:navigation-ui:$navVersion"
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
+
+    // DI
+    implementation("org.koin:koin-core:$koinVersion")
+    implementation("org.koin:koin-android-scope:$koinVersion")
+    implementation("org.koin:koin-androidx-scope:$koinVersion")
+
+    // Anko
+    implementation("org.jetbrains.anko:anko:$ankoVersion")
+    implementation("org.jetbrains.anko:anko-appcompat-v7:$ankoVersion")
+
+    // Clean Android library
+    implementation project(":cleanandroid")
+
+    // Тесты
+    testImplementation "junit:junit:4.12"
+    androidTestImplementation "androidx.test:runner:1.1.1"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.1.1"
+}
+
