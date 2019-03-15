@@ -160,6 +160,8 @@ abstract class CleanRetainFragment<Event, Presenter> :
         val showMode = event.showMode
         if (showMode is Once)
             showMode.autoRemoval = false
+        else if (showMode is Chain)
+            showMode.autoRemoval = false
 
         alertDialog?.dismiss()
         alertDialog = AlertDialog.Builder(requireContext()).apply {

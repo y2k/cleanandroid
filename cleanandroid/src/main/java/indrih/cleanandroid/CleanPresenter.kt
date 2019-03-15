@@ -111,7 +111,7 @@ abstract class CleanPresenter<Event, Screen> :
 
         when (showMode) {
             is Chain ->
-                if (showMode.isEnd())
+                if (showMode.isEnd() && showMode.autoRemoval)
                     deleteChain(event, showMode)
             is Once ->
                 if (buffer.contains(event) && showMode.autoRemoval)

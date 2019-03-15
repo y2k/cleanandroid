@@ -36,7 +36,8 @@ abstract class AbstractEvent {
          */
         class Chain(
             val prev: AbstractEvent? = null,
-            val next: AbstractEvent? = null
+            val next: AbstractEvent? = null,
+            var autoRemoval: Boolean = true
         ) : ShowMode() {
             fun isEnd() =
                 prev != null && next == null
