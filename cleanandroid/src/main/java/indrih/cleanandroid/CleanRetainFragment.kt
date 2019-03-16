@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import org.jetbrains.anko.AnkoLogger
 import indrih.cleanandroid.AbstractEvent.ShowMode.*
+import org.jetbrains.anko.warn
 
 /**
  * Базовая реализация Fragment-а, от которой нужно наследовать все остальные Fragment-ы.
@@ -163,7 +164,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
         else if (showMode is Chain)
             showMode.autoRemoval = false
 
-        alertDialog?.dismiss()
+        alertDialog?.cancel()
         alertDialog = AlertDialog.Builder(requireContext()).apply {
             setMessage(message)
             title?.let { setTitle(it) }
@@ -171,20 +172,20 @@ abstract class CleanRetainFragment<Event, Presenter> :
 
             onOkButtonClick?.let {
                 setPositiveButton(okButtonText) { _, _ ->
+                    if (showMode !is EveryTime)
+                        presenter.eventIsCommitted(event)
                     it.invoke()
                 }
             }
 
             onNoButtonClick?.let {
                 setNegativeButton(noButtonTest) { _, _ ->
+                    if (showMode !is EveryTime)
+                        presenter.eventIsCommitted(event)
                     it.invoke()
                 }
             }
 
-            setOnDismissListener {
-                if (showMode !is EveryTime)
-                    presenter.eventIsCommitted(event)
-            }
         }.show()
     }
 
