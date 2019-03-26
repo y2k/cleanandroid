@@ -63,6 +63,7 @@ abstract class CleanPresenter<Event, Screen> :
     override fun onCleared() {
         GlobalScope.launch {
             buffer.smartClear()
+            firstAttached.set(true)
             coroutineContext.cancelChildren()
             if (writeToLog) {
                 logMessage("onCleared")

@@ -8,6 +8,13 @@ class MutexEventList<Event : AbstractEvent> {
 
     private val mutex = Mutex()
 
+    override fun toString(): String {
+        val stringBuilder = StringBuilder()
+        for (event in arrayList)
+            stringBuilder.append(event.toString())
+        return stringBuilder.toString()
+    }
+
     suspend fun removeAllEqual(event: AbstractEvent) {
         mutex.withLock {
             arrayList.removeAll { it.equalEvent(event) }
