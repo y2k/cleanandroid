@@ -14,8 +14,8 @@ abstract class AbstractEvent {
     sealed class ShowMode {
         /**
          * Будет отображён лишь до тех пор, пока не выполнит своего назначения.
-         * @param autoRemoval если `true`, то после вывода на экран такие события будут удалены автоматически
-         * (за исключением тех, что будут переданы в [CleanRetainFragment.showAlert] и т.д.).
+         * @param autoRemoval если `true`, то после вывода на экран такие события будут удалены
+         * автоматически (за исключением тех, что будут переданы в [CleanRetainFragment.showAlert] и т.д.).
          * Если Вы хотите вручную отчищать событие (это можно сделать с помощью
          * [CleanPresenter.eventIsCommitted]) - установите значение `false`.
          */

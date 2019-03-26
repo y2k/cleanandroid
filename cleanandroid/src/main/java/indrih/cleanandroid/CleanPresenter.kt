@@ -21,24 +21,29 @@ abstract class CleanPresenter<Event, Screen> :
 {
     protected var writeToLog = false
 
+    /*
+     ******************* View ******************
+     */
+
     private var view: CleanContract.View<Event>? = null
 
-    private var firstAttached = true
+    private val firstAttached = MutexPrimitive(true)
 
-    private val buffer = ArrayList<Event>()
+    private val buffer = MutexEventList<Event>()
 
     @CallSuper
     override fun attachView(view: CleanContract.View<Event>) {
         this.view = view
-        if (firstAttached) {
-            onFirstAttached()
-            firstAttached = false
-        } else {
-            buffer.forEach(view::notify)
+        launch {
+            if (firstAttached.get()) {
+                onFirstAttached()
+                firstAttached.set(false)
+            } else {
+                buffer.forEachEvent(view::notify)
+            }
+            if (writeToLog)
+                logMessage("attachView")
         }
-
-        if (writeToLog)
-            logMessage("attachView")
     }
 
     @CallSuper
@@ -56,11 +61,13 @@ abstract class CleanPresenter<Event, Screen> :
 
     @CallSuper
     override fun onCleared() {
-        buffer.smartClear()
-        coroutineContext.cancelChildren()
-        if (writeToLog) {
-            logMessage("onCleared")
-            logMessage("Оставшиеся в буфере: $buffer")
+        GlobalScope.launch {
+            buffer.smartClear()
+            coroutineContext.cancelChildren()
+            if (writeToLog) {
+                logMessage("onCleared")
+                logMessage("Оставшиеся в буфере: $buffer")
+            }
         }
     }
 
@@ -70,16 +77,18 @@ abstract class CleanPresenter<Event, Screen> :
      */
     override fun eventIsCommitted(event: Event) {
         val showMode = event.showMode
-        when (showMode) {
-            is Chain -> {
-                if (showMode.isEnd())
-                    deleteChain(event, showMode)
-            }
-            is Once -> {
-                buffer.removeAllEqual(event)
-            }
-            is EveryTime -> {
-                logError("Попытка удалить постоянное уведомление")
+        launch {
+            when (showMode) {
+                is Chain -> {
+                    if (showMode.isEnd())
+                        deleteChain(event, showMode)
+                }
+                is Once -> {
+                    buffer.removeAllEqual(event)
+                }
+                is EveryTime -> {
+                    logError("Попытка удалить постоянное уведомление")
+                }
             }
         }
     }
@@ -103,26 +112,28 @@ abstract class CleanPresenter<Event, Screen> :
     protected fun notifyUI(event: Event, showMode: AbstractEvent.ShowMode = Once()) {
         event.showMode = showMode
 
-        buffer.removeAllEqual(event)
-        buffer.add(event)
-        view?.notify(event)
-        if (writeToLog)
-            logMessage("notifyUI: $event")
+        launch {
+            buffer.removeAllEqual(event)
+            buffer.addEvent(event)
+            view?.notify(event)
+            if (writeToLog)
+                logMessage("notifyUI: $event")
 
-        when (showMode) {
-            is Chain ->
-                if (showMode.isEnd() && showMode.autoRemoval)
-                    deleteChain(event, showMode)
-            is Once ->
-                if (buffer.contains(event) && showMode.autoRemoval)
-                    buffer.removeAllEqual(event)
+            when (showMode) {
+                is Chain ->
+                    if (showMode.isEnd() && showMode.autoRemoval)
+                        deleteChain(event, showMode)
+                is Once ->
+                    if (buffer.contains(event) && showMode.autoRemoval)
+                        buffer.removeAllEqual(event)
+            }
         }
     }
 
     /**
      * Рекурсивно дропает всю цепочку событий, начиная с конца.
      */
-    private fun deleteChain(event: AbstractEvent, chain: Chain) {
+    private suspend fun deleteChain(event: AbstractEvent, chain: Chain) {
         buffer.removeAllEqual(event)
         if (writeToLog)
             logMessage("deleteChain: $event")
@@ -135,6 +146,10 @@ abstract class CleanPresenter<Event, Screen> :
         MainRouter.popBackStack()
     }
 
+    /*
+     ******************* Coroutine ******************
+     */
+
     private val job = SupervisorJob()
 
     /**
@@ -144,6 +159,25 @@ abstract class CleanPresenter<Event, Screen> :
 
     override val coroutineContext: CoroutineContext
         get() = job + standardContext
+
+    @Volatile
+    protected var started = false
+
+    protected fun singleLaunch(block: suspend CoroutineScope.() -> Unit) {
+        if (!started) {
+            started = true
+            launch {
+                try {
+                    block()
+                } catch (e: Exception) {
+                    started = false
+                    throw e
+                } finally {
+                    started = false
+                }
+            }
+        }
+    }
 
     /*
      ******************************** Экстеншены ********************************
