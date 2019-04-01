@@ -1,5 +1,6 @@
 package indrih.cleanandroid
 
+import com.google.gson.reflect.TypeToken
 import java.lang.Exception
 
 /**
@@ -7,6 +8,7 @@ import java.lang.Exception
  */
 abstract class AbstractEvent {
     lateinit var showMode: ShowMode
+    lateinit var token: TypeToken<*>
 
     /**
      * Режимы отображения Event-а.
@@ -68,13 +70,4 @@ abstract class AbstractEvent {
             }
         }
     }
-
-    private val kClass = this::class
-    private val members = this::class.members
-
-    /**
-     * true, если ивенты полностью совпадают.
-     */
-    fun equalEvent(event: AbstractEvent): Boolean =
-        kClass == event.kClass && members == event.members
 }

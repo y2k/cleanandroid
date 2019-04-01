@@ -1,47 +1,51 @@
 package indrih.cleanandroid
 
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class MutexEventList<Event : AbstractEvent> {
-    private val arrayList = ArrayList<Event>()
+    internal val hashMap = LinkedHashMap<TypeToken<*>, Event>()
 
     private val mutex = Mutex()
 
     override fun toString(): String {
         val stringBuilder = StringBuilder()
-        for (event in arrayList)
+        for (event in hashMap)
             stringBuilder.append(event.toString())
         return stringBuilder.toString()
     }
 
-    suspend fun removeAllEqual(event: AbstractEvent) {
+    suspend fun removeAllEqual(event: Event) {
         mutex.withLock {
-            arrayList.removeAll { it.equalEvent(event) }
+            val token = event.token
+            hashMap.keys.removeAll { it == token }
         }
     }
 
     suspend fun smartClear() {
         mutex.withLock {
-            arrayList.removeAll { it.showMode !is AbstractEvent.ShowMode.EveryTime }
+            hashMap.values.removeAll { it.showMode !is AbstractEvent.ShowMode.EveryTime }
         }
     }
 
     suspend fun addEvent(event: Event) {
         mutex.withLock {
-            arrayList.add(event)
+            hashMap.put(event.token, event)
         }
     }
 
     suspend fun forEachEvent(block: (Event) -> Unit) {
         mutex.withLock {
-            arrayList.forEach(block)
+            for (value in hashMap.values)
+                block(value)
         }
     }
 
     suspend fun contains(event: Event): Boolean {
         mutex.withLock {
-            return arrayList.contains(event)
+            val token = event.token
+            return hashMap.filter { it.key == token }.isNotEmpty()
         }
     }
 }

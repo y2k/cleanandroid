@@ -11,9 +11,6 @@ class ChainPresenter :
     ChainContract.Presenter,
     CleanPresenter<ChainContract.Event, ChainContract.Screen>()
 {
-    init {
-        writeToLog = true
-    }
     override fun startButtonWasPressed() {
         launch {
             notifyUI(

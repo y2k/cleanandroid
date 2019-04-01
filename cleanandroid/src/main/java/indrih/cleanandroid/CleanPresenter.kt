@@ -19,27 +19,26 @@ abstract class CleanPresenter<Event, Screen> :
         where Event : AbstractEvent,
               Screen : AbstractScreen
 {
-    protected var writeToLog = false
+    var writeToLog = false
 
     /*
      ******************* View ******************
      */
 
-    private var view: CleanContract.View<Event>? = null
-
     private val firstAttached = MutexPrimitive(true)
 
-    private val buffer = MutexEventList<Event>()
+    val eventScheduler = EventScheduler<Event>()
 
     @CallSuper
     override fun attachView(view: CleanContract.View<Event>) {
-        this.view = view
+        eventScheduler.attachView(view)
+
         launch {
             if (firstAttached.get()) {
                 onFirstAttached()
                 firstAttached.set(false)
             } else {
-                buffer.forEachEvent(view::notify)
+                eventScheduler.restoreState(view)
             }
             if (writeToLog)
                 logMessage("attachView")
@@ -54,7 +53,7 @@ abstract class CleanPresenter<Event, Screen> :
 
     @CallSuper
     override fun detachView() {
-        view = null
+        eventScheduler.detachView()
         if (writeToLog)
             logMessage("detachView")
     }
@@ -62,13 +61,11 @@ abstract class CleanPresenter<Event, Screen> :
     @CallSuper
     override fun onCleared() {
         GlobalScope.launch {
-            buffer.smartClear()
+            eventScheduler.onCleared()
             firstAttached.set(true)
             coroutineContext.cancelChildren()
-            if (writeToLog) {
+            if (writeToLog)
                 logMessage("onCleared")
-                logMessage("Оставшиеся в буфере: $buffer")
-            }
         }
     }
 
@@ -80,16 +77,15 @@ abstract class CleanPresenter<Event, Screen> :
         val showMode = event.showMode
         launch {
             when (showMode) {
-                is Chain -> {
+                is Chain ->
                     if (showMode.isEnd())
-                        deleteChain(event, showMode)
-                }
-                is Once -> {
-                    buffer.removeAllEqual(event)
-                }
-                is EveryTime -> {
+                        eventScheduler.deleteChain(event, showMode)
+
+                is Once ->
+                    eventScheduler.removeAllEqual(event)
+
+                is EveryTime ->
                     logError("Попытка удалить постоянное уведомление")
-                }
             }
         }
     }
@@ -110,36 +106,25 @@ abstract class CleanPresenter<Event, Screen> :
      * не произойдёт. Буфер ивентов отчищается от уже поступивших ивентов подобного рода.
      */
     @CallSuper
-    protected fun notifyUI(event: Event, showMode: AbstractEvent.ShowMode = Once()) {
-        event.showMode = showMode
+    protected inline fun <reified E : Event> notifyUI(
+        event: E,
+        showMode: AbstractEvent.ShowMode = Once()
+    ) {
+        event.init(showMode)
 
         launch {
-            buffer.removeAllEqual(event)
-            buffer.addEvent(event)
-            view?.notify(event)
+            eventScheduler.send(event)
             if (writeToLog)
                 logMessage("notifyUI: $event")
 
             when (showMode) {
                 is Chain ->
                     if (showMode.isEnd() && showMode.autoRemoval)
-                        deleteChain(event, showMode)
+                        eventScheduler.deleteChain(event, showMode)
                 is Once ->
-                    if (buffer.contains(event) && showMode.autoRemoval)
-                        buffer.removeAllEqual(event)
+                    if (showMode.autoRemoval)
+                        eventScheduler.removeAllEqual(event)
             }
-        }
-    }
-
-    /**
-     * Рекурсивно дропает всю цепочку событий, начиная с конца.
-     */
-    private suspend fun deleteChain(event: AbstractEvent, chain: Chain) {
-        buffer.removeAllEqual(event)
-        if (writeToLog)
-            logMessage("deleteChain: $event")
-        chain.prev?.let {
-            deleteChain(it, it.showMode as Chain)
         }
     }
 
