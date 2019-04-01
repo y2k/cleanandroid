@@ -25,7 +25,7 @@ abstract class CleanPresenter<Event, Screen> :
      ******************* View ******************
      */
 
-    private val firstAttached = MutexPrimitive(true)
+    protected var firstAttached = true
 
     val eventScheduler = EventScheduler<Event>()
 
@@ -34,9 +34,9 @@ abstract class CleanPresenter<Event, Screen> :
         eventScheduler.attachView(view)
 
         launch {
-            if (firstAttached.get()) {
+            if (firstAttached) {
                 onFirstAttached()
-                firstAttached.set(false)
+                firstAttached = false
             } else {
                 eventScheduler.restoreState(view)
             }
@@ -60,9 +60,9 @@ abstract class CleanPresenter<Event, Screen> :
 
     @CallSuper
     override fun onCleared() {
+        firstAttached = true
         GlobalScope.launch {
             eventScheduler.onCleared()
-            firstAttached.set(true)
             coroutineContext.cancelChildren()
             if (writeToLog)
                 logMessage("onCleared")
