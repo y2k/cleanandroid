@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavHost
+import androidx.navigation.fragment.NavHostFragment
 import org.jetbrains.anko.AnkoLogger
 
 abstract class CleanActivity : AppCompatActivity(), NavHost, AnkoLogger {
@@ -21,6 +22,20 @@ abstract class CleanActivity : AppCompatActivity(), NavHost, AnkoLogger {
         if (writeToLog)
             logMessage("onCreate")
         instance = this
+    }
+
+    /**
+     * Вызывает переопределённый [CleanContract.View.popBackStack] или
+     * [AppCompatActivity.onBackPressed] в случае отстутствия.
+     */
+    fun popBackStack(navHostFragment: NavHostFragment) {
+        val backPressedListener = navHostFragment
+            .childFragmentManager
+            .fragments
+            .mapNotNull { it as? CleanContract.View<*> }
+            .firstOrNull()
+
+        backPressedListener?.popBackStack() ?: super.onBackPressed()
     }
 
     override fun onDestroy() {

@@ -16,6 +16,11 @@ interface CleanContract {
          * Уведомления, поступающие от презентера.
          */
         fun notify(event: Event)
+
+        /**
+         * Переход на предыдущий фрагмент.
+         */
+        fun popBackStack()
     }
 
     /**

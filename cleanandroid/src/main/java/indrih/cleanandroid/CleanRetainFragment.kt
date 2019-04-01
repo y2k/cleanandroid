@@ -100,7 +100,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
             logMessage("fragment destroyed")
     }
 
-    protected open fun popBackStack() {
+    override fun popBackStack() {
         presenter.popBackStack()
     }
 
