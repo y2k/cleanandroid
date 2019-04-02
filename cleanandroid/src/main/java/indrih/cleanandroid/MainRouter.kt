@@ -1,6 +1,7 @@
 package indrih.cleanandroid
 
 import java.lang.Exception
+import java.lang.NullPointerException
 
 object MainRouter {
     val map = hashMapOf<String, Any>()
@@ -13,8 +14,8 @@ object MainRouter {
 
         val map2 = map1.mapNotNull { it.value as? T }
         val res = when {
-            map2.isEmpty() -> throw Exception()
-            map2.size > 1 -> throw Exception()
+            map2.isEmpty() -> throw NullPointerException("Не найден аргумент")
+            map2.size > 1 -> throw NullPointerException("Найдено более одного аргумента")
             else -> map2.first()
         }
         map.values.remove(res)

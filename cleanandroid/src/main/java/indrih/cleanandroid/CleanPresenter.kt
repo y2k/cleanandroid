@@ -25,7 +25,7 @@ abstract class CleanPresenter<Event, Screen> :
      ******************* View ******************
      */
 
-    protected var firstAttached = true
+    private var firstAttached = true
 
     val eventScheduler = EventScheduler<Event>()
 
@@ -60,12 +60,14 @@ abstract class CleanPresenter<Event, Screen> :
 
     @CallSuper
     override fun onCleared() {
-        firstAttached = true
+        coroutineContext.cancelChildren()
+        if (writeToLog)
+            logMessage("onCleared")
+    }
+
+    protected fun dropEventBuffer() {
         GlobalScope.launch {
-            eventScheduler.onCleared()
-            coroutineContext.cancelChildren()
-            if (writeToLog)
-                logMessage("onCleared")
+            eventScheduler.dropEventBuffer()
         }
     }
 
