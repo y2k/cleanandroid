@@ -34,8 +34,7 @@ class EventScheduler<Event : AbstractEvent> {
         }
     }
 
-
-    suspend fun onCleared() =
+    suspend fun dropEventBuffer() =
         buffer.smartClear()
 
     suspend fun removeAllEqual(event: Event) {
