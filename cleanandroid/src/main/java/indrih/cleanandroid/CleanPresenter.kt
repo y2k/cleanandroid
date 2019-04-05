@@ -92,16 +92,6 @@ abstract class CleanPresenter<Event, Screen> :
         }
     }
 
-    protected fun <S : Screen> navigateTo(screen: S) {
-        MainRouter.navigate(screen)
-    }
-
-    protected inline fun <reified T : Any> getArg(name: String? = null): T =
-        MainRouter.getArg(name)
-
-    protected fun getAllArgs(): HashMap<String, Any> =
-        MainRouter.getAllArgs()
-
     /**
      * Сюда поступают ивенты, которые должны быть восстановлены после смены конфигурации.
      * Скопления одинаковых ивентов, которые все разом будут вываливаться после смены конфигурации,
@@ -129,6 +119,19 @@ abstract class CleanPresenter<Event, Screen> :
             }
         }
     }
+
+    /*
+     ******************* Navigation ******************
+     */
+
+    protected val allArgs = MainRouter.getArgs().map
+
+    protected fun <S : Screen> navigateTo(screen: S) {
+        MainRouter.navigate(screen)
+    }
+
+    protected inline fun <reified T : Any> getArg(name: String? = null): T =
+        allArgs.getArg(name)
 
     override fun popBackStack() {
         MainRouter.popBackStack()
