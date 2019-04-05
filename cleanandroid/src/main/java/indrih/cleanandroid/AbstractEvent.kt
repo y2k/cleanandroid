@@ -1,7 +1,6 @@
 package indrih.cleanandroid
 
 import com.google.gson.reflect.TypeToken
-import java.lang.Exception
 
 /**
  * Создаваемые ивенты должны наследовать этот абстрактный класс.
@@ -30,12 +29,42 @@ abstract class AbstractEvent {
 
         /**
          * Позволяет организовывать цепочки событий: все события, входящие в эту цепочку,
+         * будут удалены из буфера событий только тогда, когда будет вызван [delete].
+         * Пример использования: Show progress - hide progress. Пока не придёт уведомление hide progress,
+         * даже при повороте экрана всё равно необходимо отображать прогресс.
+         */
+        class EventChain internal constructor() : ShowMode() {
+            private val list = MutexEventList<AbstractEvent>()
+
+            private var isFinished = false
+
+            internal suspend fun add(event: AbstractEvent) {
+                if (isFinished) {
+                    throw IllegalStateException(
+                        "Данный EventChain уже завершил свою работу и не может быть переиспользован"
+                    )
+                }
+                list.addEvent(event)
+            }
+
+            internal suspend fun delete(onEachEvent: suspend (AbstractEvent) -> Unit) {
+                isFinished = true
+                list.forEachEventSuspend(onEachEvent)
+            }
+        }
+
+        /**
+         * Позволяет организовывать цепочки событий: все события, входящие в эту цепочку,
          * будут удалены из буфера событий только тогда, когда вся цепочка отобразится на экране.
          * Пример использования: Show progress - hide progress. Пока не придёт уведомление hide progress,
          * даже при повороте экрана всё равно необходимо отображать прогресс.
          * Но цепочки имеют ограниченную функциональность - на данном этапе они подходят только для
          * событий, реализованных через object.
          */
+        @Deprecated(
+            message = "Используйте createChain() и deleteChain()",
+            level = DeprecationLevel.ERROR
+        )
         class Chain(
             val prev: AbstractEvent? = null,
             val next: AbstractEvent? = null,
@@ -63,7 +92,7 @@ abstract class AbstractEvent {
                 }
 
                 try {
-                    assert(showMode is Chain)
+                    //assert(showMode is Chain)
                 } catch (e: Exception) {
                     throw IllegalArgumentException("Все звенья цепи должны иметь showMode Chain")
                 }

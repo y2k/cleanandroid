@@ -4,7 +4,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class MutexEventList<Event : AbstractEvent> {
+internal class MutexEventList<Event : AbstractEvent> {
     internal val hashMap = LinkedHashMap<TypeToken<*>, Event>()
 
     private val mutex = Mutex()
@@ -16,7 +16,7 @@ class MutexEventList<Event : AbstractEvent> {
         return stringBuilder.toString()
     }
 
-    suspend fun removeAllEqual(event: Event) {
+    suspend fun <E : AbstractEvent> removeAllEqual(event: E) {
         mutex.withLock {
             val token = event.token
             hashMap.keys.removeAll { it == token }
@@ -36,6 +36,13 @@ class MutexEventList<Event : AbstractEvent> {
     }
 
     suspend fun forEachEvent(block: (Event) -> Unit) {
+        mutex.withLock {
+            for (value in hashMap.values)
+                block(value)
+        }
+    }
+
+    suspend fun forEachEventSuspend(block: suspend (Event) -> Unit) {
         mutex.withLock {
             for (value in hashMap.values)
                 block(value)

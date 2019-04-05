@@ -5,6 +5,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import org.jetbrains.anko.AnkoLogger
 import indrih.cleanandroid.AbstractEvent.ShowMode.*
+import indrih.cleanandroid.router.MainRouter
 
 /**
  * Базовая реализация Presenter-а, от которой нужно наследовать все остальные Presenter-ы.
@@ -31,7 +32,7 @@ abstract class CleanPresenter<Event, Screen> :
 
     @CallSuper
     override fun attachView(view: CleanContract.View<Event>) {
-        eventScheduler.attachView(view)
+        eventScheduler.attachView(view, writeToLog)
 
         launch {
             if (firstAttached) {
@@ -79,15 +80,11 @@ abstract class CleanPresenter<Event, Screen> :
         val showMode = event.showMode
         launch {
             when (showMode) {
-                is Chain ->
-                    if (showMode.isEnd())
-                        eventScheduler.deleteChain(event, showMode)
-
                 is Once ->
                     eventScheduler.removeAllEqual(event)
 
                 is EveryTime ->
-                    logError("Попытка удалить постоянное уведомление")
+                    throw IllegalArgumentException("Попытка удалить постоянное уведомление")
             }
         }
     }
@@ -109,14 +106,17 @@ abstract class CleanPresenter<Event, Screen> :
             if (writeToLog)
                 logMessage("notifyUI: $event")
 
-            when (showMode) {
-                is Chain ->
-                    if (showMode.isEnd() && showMode.autoRemoval)
-                        eventScheduler.deleteChain(event, showMode)
-                is Once ->
-                    if (showMode.autoRemoval)
-                        eventScheduler.removeAllEqual(event)
-            }
+            if (showMode is Once && showMode.autoRemoval)
+                eventScheduler.removeAllEqual(event)
+        }
+    }
+
+    protected fun createChain() =
+        EventChain()
+
+    protected fun deleteChain(chain: EventChain) {
+        launch {
+            eventScheduler.deleteChain(chain)
         }
     }
 
@@ -124,14 +124,14 @@ abstract class CleanPresenter<Event, Screen> :
      ******************* Navigation ******************
      */
 
-    protected val allArgs = MainRouter.getArgs().map
+    protected val allArgs = MainRouter.copyAndDelete().getAllArgs()
+
+    protected inline fun <reified T : Any> getArg(name: String? = null): T =
+        allArgs.getArg(name)
 
     protected fun <S : Screen> navigateTo(screen: S) {
         MainRouter.navigate(screen)
     }
-
-    protected inline fun <reified T : Any> getArg(name: String? = null): T =
-        allArgs.getArg(name)
 
     override fun popBackStack() {
         MainRouter.popBackStack()
@@ -150,20 +150,20 @@ abstract class CleanPresenter<Event, Screen> :
 
     override val coroutineContext: CoroutineContext = job + standardContext
 
-    @Volatile
-    protected var started = false
+    protected val started = MutexPrimitive(false)
 
     protected fun singleLaunch(block: suspend CoroutineScope.() -> Unit) {
-        if (!started) {
-            started = true
-            launch {
+        launch {
+            if (!started.get()) {
+                started.set(true)
+
                 try {
                     block()
                 } catch (e: Exception) {
-                    started = false
+                    started.set(false)
                     throw e
                 } finally {
-                    started = false
+                    started.set(false)
                 }
             }
         }
