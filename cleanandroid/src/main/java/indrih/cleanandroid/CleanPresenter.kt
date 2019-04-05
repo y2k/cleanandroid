@@ -145,8 +145,7 @@ abstract class CleanPresenter<Event, Screen> :
      */
     protected val standardContext = Dispatchers.Main
 
-    override val coroutineContext: CoroutineContext
-        get() = job + standardContext
+    override val coroutineContext: CoroutineContext = job + standardContext
 
     @Volatile
     protected var started = false
