@@ -15,9 +15,7 @@ class StartFragment :
     StartContract.View,
     MainFragment<StartContract.Event, StartContract.Presenter>()
 {
-    override val presenterFactory: () -> StartContract.Presenter = {
-        StartPresenter()
-    }
+    override val presenterFactory = ::StartPresenter
 
     override fun onCreateView(
         inflater: LayoutInflater,

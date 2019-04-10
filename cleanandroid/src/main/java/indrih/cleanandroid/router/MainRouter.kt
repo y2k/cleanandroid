@@ -4,17 +4,17 @@ import indrih.cleanandroid.AbstractScreen
 import indrih.cleanandroid.CleanActivity
 
 internal object MainRouter {
-    private val map = ArgsMap()
+    private val argsMap = ArgsMap()
 
     fun copyAndDelete(): ArgsMap {
-        val res = ArgsMap(map.getAllArgs())
-        map.deleteAllArgs()
+        val res = ArgsMap(argsMap.getAllArgs())
+        argsMap.deleteAllArgs()
         return res
     }
 
     fun <Screen : AbstractScreen> navigate(screen: Screen) {
-        map.deleteAllArgs()
-        map.putArgs(screen.map)
+        argsMap.deleteAllArgs()
+        argsMap.putArgs(screen.map)
         CleanActivity.navigate(screen.action)
     }
 

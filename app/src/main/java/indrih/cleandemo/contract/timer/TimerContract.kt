@@ -30,15 +30,7 @@ interface TimerContract : CleanContract {
 
     interface Gateway : CleanContract.Gateway
 
-    sealed class Screen(
-        action: Int,
-        vararg pairs: Pair<String, Any>
-    ) : AbstractScreen(
-        action,
-        *pairs
-    ) {
-        object Chain : Screen(
-            R.id.action_timerFragment_to_chainFragment
-        )
+    sealed class Screen(action: Int) : AbstractScreen(action) {
+        object Chain : Screen(R.id.action_timerFragment_to_chainFragment)
     }
 }

@@ -62,7 +62,7 @@ abstract class AbstractEvent {
          * событий, реализованных через object.
          */
         @Deprecated(
-            message = "Используйте createChain() и deleteChain()",
+            message = "Use createChain() and deleteChain()",
             level = DeprecationLevel.ERROR
         )
         class Chain(

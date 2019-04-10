@@ -29,16 +29,9 @@ interface StartContract : CleanContract {
 
     interface Gateway : CleanContract.Gateway
 
-    sealed class Screen(
-        action: Int,
-        vararg pairs: Pair<String, Any>
-    ) : AbstractScreen(
-        action,
-        *pairs
-    ) {
-        class Timer(text: String) : Screen(
-            R.id.action_startFragment_to_timerFragment,
-            "text" to text
-        )
+    sealed class Screen(action: Int) : AbstractScreen(action) {
+        class Timer(text: String) : Screen(R.id.action_startFragment_to_timerFragment) {
+            init { putArg(text) }
+        }
     }
 }

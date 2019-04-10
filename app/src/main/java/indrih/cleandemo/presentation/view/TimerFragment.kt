@@ -15,9 +15,7 @@ class TimerFragment :
     TimerContract.View,
     MainFragment<TimerContract.Event, TimerContract.Presenter>()
 {
-    override val presenterFactory: () -> TimerContract.Presenter = {
-        TimerPresenter()
-    }
+    override val presenterFactory = ::TimerPresenter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

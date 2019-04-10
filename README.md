@@ -2,7 +2,7 @@
 ## Установка
 Текущая версия
 ```
-clean_android_version = '1.2.3'
+clean_android_version = '1.3.0'
 ```
 
 Зависимости
@@ -243,17 +243,7 @@ if (event != null) {
    и удалить их **нельзя**, можно лишь заменить аналогичным событием.
    Так же, они переживут и onCleared. Умрут они только вместе с Presenter-ом.
 3) Chain - цепочка событий.
- 
-   Этот вариант имеет несколько нюансов:
-
-   a) он может использоваться только с объектами.
-
-   b) чем длиннее цепочка, тем больше шансов ошибиться и поставить не тот параметр в цепочку.
-
-   c) Любая опечатка будет стоить Вам жизни. :)
-
-   Но тем не менее, иногда этот вариант удобен. К примеру:
-   у Вас есть два Event - ShowProgress и HideProgress:
+   К примеру: у Вас есть два Event - ShowProgress и HideProgress:
    ```
    sealed class Event : AbstractEvent() {
        object ShowProgress : Event()
@@ -264,15 +254,11 @@ if (event != null) {
 
    Вы организовываете их в цепочку (Цепочка подобна связанным спискам):
    ```
-   notifyUI(
-       Event.ShowProgress,
-       showMode = Chain(next = Event.HideProgress)
-   )
+   val chain = createChain()
+   notifyUI(Event.ShowProgress, showMode = chain)
    // ...
-   notifyUI(
-       Event.HideProgress,
-       showMode = Chain(prev = Event.ShowProgress)
-   )
+   notifyUI(Event.HideProgress,showMode = chain)
+   deleteChain(chain)
    ```
 
    Сначала отправляется на отображение ShowProgress, пользователь
@@ -286,17 +272,31 @@ if (event != null) {
 1) Объявляем Screen для нужного экрана, передавая необходимые данные
 в базовый `AbstractScreen`:
    ```
-   sealed class Screen(action: Int, vararg pairs: Pair<String, Any>) : AbstractScreen(action, *pairs) {
+   sealed class Screen(action: Int) : AbstractScreen(action) {
       // без параметров
-      object DeviceList : Screen(
-          R.id.action_deviceAddFragment_to_deviceListFragment
+      object SomeScreen : Screen(
+          R.id.action_...
       )
    
       // с параметрами
-      class StmParamsAdd(device: Device) : Screen(
-          R.id.action_deviceAddFragment_to_stmParamsAddFragment,
-          "device" to device
-      )
+      class SomeScreen(device: Device) : Screen(
+          R.id.action_...
+      ) {
+          init { putArg(device) }
+      }
+
+      // с несколькими параметрами
+      class SomeScreen(
+          device1: Device,
+          device2: Device
+      ) : Screen(
+          R.id.action_...
+      ) {
+          init {
+              putArg(device1, name = "device1")
+              putArg(device2, name = "device2")
+          }
+      }
    }
    ```
    
@@ -306,10 +306,10 @@ if (event != null) {
 3) Для перехода на нужный экран в Presenter-е вызываем:
    ```
    // без параметров
-   navigateTo(DeviceList)
+   navigateTo(SomeScreen)
    
    // с параметрами
-   navigateTo(StmParamsEdit(device))
+   navigateTo(SomeScreen(device))
    ```
    
 4) Для получения переданных зависимостей в Presenter-е:
@@ -325,5 +325,5 @@ if (event != null) {
    
    Но можно получить все аргументы без приведений типов
    ```
-   val args: HashMap<String, Any> = getAllArgs()
+   val args: HashMap<String, Any> = allArgs
    ```

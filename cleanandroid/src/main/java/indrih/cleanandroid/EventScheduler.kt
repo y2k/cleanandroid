@@ -46,9 +46,6 @@ class EventScheduler<Event : AbstractEvent> : AnkoLogger {
         view?.notify(event)
     }
 
-    /**
-     * Рекурсивно дропает всю цепочку событий, начиная с конца.
-     */
     @Suppress("UNCHECKED_CAST")
     suspend fun deleteChain(chain: AbstractEvent.ShowMode.EventChain) {
         if (writeToLog)

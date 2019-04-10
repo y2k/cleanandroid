@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavHost
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
 import org.jetbrains.anko.AnkoLogger
 

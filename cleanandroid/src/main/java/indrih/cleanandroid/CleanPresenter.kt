@@ -28,7 +28,7 @@ abstract class CleanPresenter<Event, Screen> :
 
     private var firstAttached = true
 
-    val eventScheduler = EventScheduler<Event>()
+    protected val eventScheduler = EventScheduler<Event>()
 
     @CallSuper
     override fun attachView(view: CleanContract.View<Event>) {

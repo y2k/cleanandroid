@@ -15,9 +15,7 @@ class ChainFragment :
     ChainContract.View,
     MainFragment<ChainContract.Event, ChainContract.Presenter>()
 {
-    override val presenterFactory: () -> ChainContract.Presenter = {
-        ChainPresenter()
-    }
+    override val presenterFactory = ::ChainPresenter
 
     override fun onCreateView(
         inflater: LayoutInflater,
