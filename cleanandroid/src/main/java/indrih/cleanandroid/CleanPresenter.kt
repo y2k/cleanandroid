@@ -28,7 +28,7 @@ abstract class CleanPresenter<Event, Screen> :
 
     private var firstAttached = true
 
-    protected val eventScheduler = EventScheduler<Event>()
+    val eventScheduler = EventScheduler<Event>()
 
     @CallSuper
     override fun attachView(view: CleanContract.View<Event>) {
@@ -95,7 +95,7 @@ abstract class CleanPresenter<Event, Screen> :
      * не произойдёт. Буфер ивентов отчищается от уже поступивших ивентов подобного рода.
      */
     @CallSuper
-    protected inline fun <reified E : Event> notifyUI(
+    inline fun <reified E : Event> notifyUI(
         event: E,
         showMode: AbstractEvent.ShowMode = Once()
     ) {

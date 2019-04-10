@@ -2,7 +2,7 @@
 ## Установка
 Текущая версия
 ```
-clean_android_version = '1.3.0'
+clean_android_version = '1.3.1'
 ```
 
 Зависимости
