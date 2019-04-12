@@ -22,8 +22,5 @@ interface Contract : CleanContract {
 
     interface Gateway : CleanContract.Gateway
 
-    sealed class Screen(
-        action: Int,
-        vararg pairs: Pair<String, Any>
-    ) : AbstractScreen(action, *pairs)
+    sealed class Screen(action: Int) : AbstractScreen(action)
 }
