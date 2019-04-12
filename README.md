@@ -2,7 +2,7 @@
 ## Установка
 Текущая версия
 ```
-clean_android_version = '1.3.4'
+clean_android_version = '1.4.0'
 ```
 
 Зависимости
@@ -94,6 +94,16 @@ dependencies {
    ```
    someMap.safeForEach { suspendFunc(it.key, it.value) }
    ```
+   
+* Навигация.
+По умолчанию используется [DefaultRouter](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/router/DefaultRouter.kt).
+Если Вы хотите сделать свою логику навигации - пронаследуйте свой объект от 
+[Router](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/router/Router.kt) 
+и допишите эту строчку в Вашем `Activity`:
+
+    ```
+    override val router: Router = MyRouter
+    ```
 
 ## Правильный менеджемент корутин
 #### На стороне Презентера

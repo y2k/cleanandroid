@@ -12,7 +12,7 @@ class StartPresenter :
     override fun timerButtonWasPressed(text: String) {
         notifyUI(
             DoYouConfirmSwitchToNext(
-                onOkButtonClick = { navigateTo(Timer(text)) }
+                onOkButtonClick = { router.navigateTo(Timer(text)) }
             )
         )
     }

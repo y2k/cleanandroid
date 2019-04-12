@@ -39,6 +39,6 @@ class TimerPresenter :
     }
 
     override fun nextButtonWasPressed() {
-        navigateTo(TimerContract.Screen.Chain)
+        router.navigateTo(TimerContract.Screen.Chain)
     }
 }

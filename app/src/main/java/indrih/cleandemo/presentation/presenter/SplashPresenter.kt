@@ -9,6 +9,6 @@ class SplashPresenter :
 {
     override fun onFirstAttached() {
         super.onFirstAttached()
-        navigateTo(SplashContract.Screen.Start)
+        router.navigateTo(SplashContract.Screen.Start)
     }
 }
