@@ -2,7 +2,7 @@
 ## Установка
 Текущая версия
 ```
-clean_android_version = '1.3.4'
+clean_android_version = '1.4.0'
 ```
 
 Зависимости
@@ -94,6 +94,16 @@ dependencies {
    ```
    someMap.safeForEach { suspendFunc(it.key, it.value) }
    ```
+   
+* Навигация.
+По умолчанию используется [DefaultRouter](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/router/DefaultRouter.kt).
+Если Вы хотите сделать свою логику навигации - пронаследуйте свой объект от 
+[Router](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/router/Router.kt) 
+и допишите эту строчку в Вашем `Activity`:
+
+    ```
+    override val router: Router = MyRouter
+    ```
 
 ## Правильный менеджемент корутин
 #### На стороне Презентера
@@ -160,7 +170,7 @@ fun notifyMain(event: Event, mainEvent: MainEvent) {
         is HideKeyboard ->
             hideKeyboard(event)
 
-        else -> {} // добавлен как индикатор того, для всех ли событий была прописана реализация
+        else -> Unit // добавлен как индикатор того, для всех ли событий была прописана реализация
                    // если IDE подчёркивает серым - значит всё верно. :)
     }
 }
@@ -182,7 +192,7 @@ override fun notify(event: Event) {
         is Main<*> ->
             notifyMain(event, event.main)
 
-        else -> {}
+        else -> Unit
     }
 }
 ```
@@ -304,10 +314,10 @@ if (event != null) {
 3) Для перехода на нужный экран в Presenter-е вызываем:
    ```
    // без параметров
-   navigateTo(SomeScreen)
+   router.navigateTo(SomeScreen)
    
    // с параметрами
-   navigateTo(SomeScreen(device))
+   router.navigateTo(SomeScreen(device))
    ```
    
 4) Для получения переданных зависимостей в Presenter-е:

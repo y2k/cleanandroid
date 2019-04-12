@@ -13,7 +13,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import org.jetbrains.anko.AnkoLogger
 import indrih.cleanandroid.AbstractEvent.ShowMode.*
-import org.jetbrains.anko.warn
 
 /**
  * Базовая реализация Fragment-а, от которой нужно наследовать все остальные Fragment-ы.
@@ -34,7 +33,13 @@ abstract class CleanRetainFragment<Event, Presenter> :
     protected abstract val presenterFactory: () -> Presenter // на всякий случай, вдруг я решу изменить место создания презентера
 
     protected open val presenter: Presenter by lazy {
-        presenterFactory()
+        presenterFactory().also {
+            val cleanAct = activity as? CleanActivity
+            if (cleanAct == null)
+                throw IllegalStateException("Ваше Activity должно наследоваться от CleanActivity")
+            else
+                it.activity = cleanAct
+        }
     }
 
     protected val fragmentView: View
@@ -63,9 +68,6 @@ abstract class CleanRetainFragment<Event, Presenter> :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = isRetain
-
-        if (activity !is CleanActivity)
-            throw IllegalStateException("Ваше Activity должно наследоваться от CleanActivity")
 
         if (writeToLog)
             logMessage("fragment created")
@@ -98,14 +100,6 @@ abstract class CleanRetainFragment<Event, Presenter> :
 
         if (writeToLog)
             logMessage("fragment destroyed")
-    }
-
-    override fun navigateUp() {
-        presenter.navigateUp()
-    }
-
-    override fun popBackStack() {
-        presenter.popBackStack()
     }
 
     /*

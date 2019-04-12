@@ -2,6 +2,7 @@ package indrih.cleandemo.base
 
 import indrih.cleanandroid.AbstractEvent
 import indrih.cleanandroid.CleanContract
+import indrih.cleanandroid.CleanPresenter
 import indrih.cleanandroid.CleanRetainFragment
 
 abstract class MainFragment<Event, Presenter> : CleanRetainFragment<Event, Presenter>()
@@ -9,7 +10,6 @@ abstract class MainFragment<Event, Presenter> : CleanRetainFragment<Event, Prese
               Presenter : CleanContract.Presenter<Event>
 {
     sealed class MainEvent : AbstractEvent() {
-
         /**
          * Скрывает уведомление, показанное на экране.
          * Работает как для Toast-ов, так и для Alert-ов.
@@ -39,7 +39,7 @@ abstract class MainFragment<Event, Presenter> : CleanRetainFragment<Event, Prese
             is MainEvent.HideKeyboard ->
                 hideKeyboard(event)
 
-            else -> {}
+            else -> Unit
         }
     }
 }

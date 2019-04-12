@@ -6,7 +6,7 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import org.jetbrains.anko.AnkoLogger
 import indrih.cleanandroid.AbstractEvent.ShowMode.*
-import indrih.cleanandroid.router.MainRouter
+import indrih.cleanandroid.router.Router
 
 /**
  * Базовая реализация Presenter-а, от которой нужно наследовать все остальные Presenter-ы.
@@ -125,21 +125,33 @@ abstract class CleanPresenter<Event, Screen> :
      ******************* Navigation ******************
      */
 
-    protected val allArgs = MainRouter.copyAndDelete().getAllArgs()
+    override lateinit var activity: CleanActivity
+
+    protected val router: Router
+        get() = activity.router
+
+    protected val allArgs: HashMap<String, Any> by lazy {
+        router.copyAndDelete()
+    }
 
     protected inline fun <reified T : Any> getArg(name: String? = null): T =
         allArgs.getArg(name)
 
-    protected fun <S : Screen> navigateTo(screen: S, navOptions: NavOptions? = null) {
-        MainRouter.navigate(screen, navOptions)
+    @Deprecated(
+        message = "Use router.navigateTo()",
+        replaceWith = ReplaceWith("router.navigateTo(screen, navOptions)"),
+        level = DeprecationLevel.ERROR
+    )
+    protected open fun <S : Screen> navigateTo(screen: S, navOptions: NavOptions? = null) {
+        router.navigateTo(screen, navOptions)
     }
 
     override fun navigateUp() {
-        MainRouter.navigateUp()
+        router.navigateUp()
     }
 
     override fun popBackStack() {
-        MainRouter.popBackStack()
+        router.popBackStack()
     }
 
     /*

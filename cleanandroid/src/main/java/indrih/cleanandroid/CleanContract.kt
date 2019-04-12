@@ -16,13 +16,6 @@ interface CleanContract {
          * Уведомления, поступающие от презентера.
          */
         fun notify(event: Event)
-
-        fun navigateUp()
-
-        /**
-         * Переход на предыдущий фрагмент.
-         */
-        fun popBackStack()
     }
 
     /**
@@ -30,6 +23,8 @@ interface CleanContract {
      * командует Interactor-у выполнить какие-либо действия, командует View отобразить изменения.
      */
     interface Presenter<Event : AbstractEvent> {
+        var activity: CleanActivity
+
         /**
          * Инициализирующий метод, связывающий View и Presenter.
          */
@@ -56,11 +51,18 @@ interface CleanContract {
          */
         fun eventIsCommitted(event: Event)
 
+        @Deprecated(
+            message = "Use router.navigateUp()",
+            replaceWith = ReplaceWith("router.navigateUp()"),
+            level = DeprecationLevel.ERROR
+        )
         fun navigateUp()
 
-        /**
-         * Переход на предыдущий фрагмент.
-         */
+        @Deprecated(
+            message = "Use router.popBackStack()",
+            replaceWith = ReplaceWith("router.popBackStack()"),
+            level = DeprecationLevel.ERROR
+        )
         fun popBackStack()
     }
 
