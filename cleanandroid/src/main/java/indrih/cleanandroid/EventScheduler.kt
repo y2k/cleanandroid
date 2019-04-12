@@ -46,7 +46,6 @@ class EventScheduler<Event : AbstractEvent> : AnkoLogger {
         view?.notify(event)
     }
 
-    @Suppress("UNCHECKED_CAST")
     suspend fun deleteChain(chain: AbstractEvent.ShowMode.EventChain) {
         if (writeToLog)
             logMessage("deleteChain")
