@@ -19,7 +19,8 @@ internal object MainRouter : AnkoLogger {
     fun <Screen : AbstractScreen> navigate(screen: Screen, navOptions: NavOptions?) {
         argsMap.deleteAllArgs()
         argsMap.putArgs(screen.map)
-        screenList.add(screen)
+        if (!screen.inclusive)
+            screenList.add(screen)
         CleanActivity.navigate(screen.action, navOptions)
     }
 
