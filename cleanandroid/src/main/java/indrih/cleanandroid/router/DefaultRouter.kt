@@ -2,11 +2,9 @@ package indrih.cleanandroid.router
 
 import androidx.navigation.NavOptions
 import indrih.cleanandroid.AbstractScreen
-import indrih.cleanandroid.CleanActivity
-import indrih.cleanandroid.logMessage
 import org.jetbrains.anko.AnkoLogger
 
-internal object DefaultRouter : Router(), AnkoLogger {
+object DefaultRouter : Router(), AnkoLogger {
     private val screenList = ArrayList<AbstractScreen>()
 
     override fun <Screen : AbstractScreen> navigateTo(screen: Screen, navOptions: NavOptions?) {
@@ -34,5 +32,9 @@ internal object DefaultRouter : Router(), AnkoLogger {
 
     override fun moveTaskToBack() {
         activity?.moveTaskToBack(true)
+    }
+
+    override fun clearStack() {
+        screenList.clear()
     }
 }

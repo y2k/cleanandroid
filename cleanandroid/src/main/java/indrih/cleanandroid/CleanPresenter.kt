@@ -125,10 +125,7 @@ abstract class CleanPresenter<Event, Screen> :
      ******************* Navigation ******************
      */
 
-    override lateinit var activity: CleanActivity
-
-    protected val router: Router
-        get() = activity.router
+    protected val router: Router = CleanActivity.router
 
     protected val allArgs: HashMap<String, Any> by lazy {
         router.copyAndDelete()

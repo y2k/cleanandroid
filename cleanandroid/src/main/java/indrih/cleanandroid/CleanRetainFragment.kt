@@ -33,13 +33,7 @@ abstract class CleanRetainFragment<Event, Presenter> :
     protected abstract val presenterFactory: () -> Presenter // на всякий случай, вдруг я решу изменить место создания презентера
 
     protected open val presenter: Presenter by lazy {
-        presenterFactory().also {
-            val cleanAct = activity as? CleanActivity
-            if (cleanAct == null)
-                throw IllegalStateException("Ваше Activity должно наследоваться от CleanActivity")
-            else
-                it.activity = cleanAct
-        }
+        presenterFactory()
     }
 
     protected val fragmentView: View
@@ -68,6 +62,9 @@ abstract class CleanRetainFragment<Event, Presenter> :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = isRetain
+
+        if (activity !is CleanActivity)
+            throw IllegalStateException("Ваше Activity должно наследоваться от CleanActivity")
 
         if (writeToLog)
             logMessage("fragment created")

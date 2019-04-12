@@ -22,6 +22,8 @@ abstract class Router {
 
     abstract fun moveTaskToBack()
 
+    abstract fun clearStack()
+
     fun copyAndDelete(): HashMap<String, Any> {
         val res = argsMap.getAllArgs()
         argsMap.deleteAllArgs()

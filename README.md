@@ -2,7 +2,7 @@
 ## Установка
 Текущая версия
 ```
-clean_android_version = '1.4.0'
+clean_android_version = '1.4.2'
 ```
 
 Зависимости
@@ -99,10 +99,12 @@ dependencies {
 По умолчанию используется [DefaultRouter](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/router/DefaultRouter.kt).
 Если Вы хотите сделать свою логику навигации - пронаследуйте свой объект от 
 [Router](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/router/Router.kt) 
-и допишите эту строчку в Вашем `Activity`:
+и допишите эти строчки в Вашем `Activity`:
 
     ```
-    override val router: Router = MyRouter
+    init {
+        router = MyRouter
+    }
     ```
 
 ## Правильный менеджемент корутин

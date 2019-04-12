@@ -23,8 +23,6 @@ interface CleanContract {
      * командует Interactor-у выполнить какие-либо действия, командует View отобразить изменения.
      */
     interface Presenter<Event : AbstractEvent> {
-        var activity: CleanActivity
-
         /**
          * Инициализирующий метод, связывающий View и Presenter.
          */
