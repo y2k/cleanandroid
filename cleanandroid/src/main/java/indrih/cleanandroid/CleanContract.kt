@@ -17,6 +17,8 @@ interface CleanContract {
          */
         fun notify(event: Event)
 
+        fun navigateUp()
+
         /**
          * Переход на предыдущий фрагмент.
          */
@@ -53,6 +55,8 @@ interface CleanContract {
          * Вызывается [View], когда ивент обработан и вновь вызывать его не нужно.
          */
         fun eventIsCommitted(event: Event)
+
+        fun navigateUp()
 
         /**
          * Переход на предыдущий фрагмент.

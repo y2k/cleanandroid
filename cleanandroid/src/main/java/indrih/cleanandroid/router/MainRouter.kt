@@ -1,9 +1,13 @@
 package indrih.cleanandroid.router
 
+import androidx.navigation.NavOptions
 import indrih.cleanandroid.AbstractScreen
 import indrih.cleanandroid.CleanActivity
+import indrih.cleanandroid.logMessage
+import org.jetbrains.anko.AnkoLogger
 
-internal object MainRouter {
+internal object MainRouter : AnkoLogger {
+    private val screenList = ArrayList<AbstractScreen>()
     private val argsMap = ArgsMap()
 
     fun copyAndDelete(): ArgsMap {
@@ -12,13 +16,25 @@ internal object MainRouter {
         return res
     }
 
-    fun <Screen : AbstractScreen> navigate(screen: Screen) {
+    fun <Screen : AbstractScreen> navigate(screen: Screen, navOptions: NavOptions?) {
         argsMap.deleteAllArgs()
         argsMap.putArgs(screen.map)
-        CleanActivity.navigate(screen.action)
+        screenList.add(screen)
+        CleanActivity.navigate(screen.action, navOptions)
+    }
+
+    fun navigateUp() {
+        CleanActivity.navigateUp()
     }
 
     fun popBackStack() {
-        CleanActivity.popBackStack()
+        logMessage("Size: ${screenList.size}")
+        val lastScreen = screenList.lastOrNull()
+        if (lastScreen != null && screenList.size > 1) {
+            screenList.remove(lastScreen)
+            CleanActivity.popBackStack(lastScreen)
+        } else {
+            CleanActivity.moveTaskToBack()
+        }
     }
 }

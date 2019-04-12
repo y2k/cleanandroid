@@ -100,6 +100,10 @@ abstract class CleanRetainFragment<Event, Presenter> :
             logMessage("fragment destroyed")
     }
 
+    override fun navigateUp() {
+        presenter.navigateUp()
+    }
+
     override fun popBackStack() {
         presenter.popBackStack()
     }

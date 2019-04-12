@@ -2,7 +2,7 @@
 ## Установка
 Текущая версия
 ```
-clean_android_version = '1.3.1'
+clean_android_version = '1.3.3'
 ```
 
 Зависимости
@@ -260,35 +260,41 @@ if (event != null) {
    
    Цепочку можно организовать любой длины.
    
-## Передача аргументов
+## Навигация и передача аргументов
 1) Объявляем Screen для нужного экрана, передавая необходимые данные
 в базовый `AbstractScreen`:
    ```
-   sealed class Screen(action: Int) : AbstractScreen(action) {
-      // без параметров
-      object SomeScreen : Screen(
-          R.id.action_...
-      )
-   
-      // с параметрами
-      class SomeScreen(device: Device) : Screen(
-          R.id.action_...
-      ) {
-          init { putArg(device) }
-      }
+   sealed class Screen(
+       action: Int
+   ) : AbstractScreen(
+       action = action,
+       screenId = R.id.screenId,
+       inclusive = false // стандартное значение
+   ) {
+       // без параметров
+       object SomeScreen1 : Screen(
+           R.id.action_...
+       )
 
-      // с несколькими параметрами
-      class SomeScreen(
-          device1: Device,
-          device2: Device
-      ) : Screen(
-          R.id.action_...
-      ) {
-          init {
-              putArg(device1, name = "device1")
-              putArg(device2, name = "device2")
-          }
-      }
+       // с параметрами
+       class SomeScreen2(device: Device) : Screen(
+           R.id.action_...
+       ) {
+           init { putArg(device) }
+       }
+
+       // с несколькими параметрами
+       class SomeScreen3(
+           device1: Device,
+           device2: Device
+       ) : Screen(
+           R.id.action_...
+       ) {
+           init {
+               putArg(device1, name = "device1")
+               putArg(device2, name = "device2")
+           }
+       }
    }
    ```
    

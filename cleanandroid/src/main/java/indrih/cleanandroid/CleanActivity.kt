@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavHost
-import androidx.navigation.Navigation
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import org.jetbrains.anko.AnkoLogger
 
@@ -49,16 +49,20 @@ abstract class CleanActivity : AppCompatActivity(), NavHost, AnkoLogger {
     companion object : AnkoLogger {
         private var instance: CleanActivity? = null
 
-        fun navigate(res: Int) {
-            instance?.navController?.navigate(res)
+        fun navigate(res: Int, navOptions: NavOptions?) {
+            instance?.navController?.navigate(res, null, navOptions)
         }
 
-        fun popBackStack() {
-            instance?.navController?.popBackStack()
+        fun popBackStack(screen: AbstractScreen) {
+            instance?.navController?.popBackStack(screen.screenId, screen.inclusive)
         }
 
-        fun popBackStack(destinationId: Int, inclusive: Boolean) {
-            instance?.navController?.popBackStack(destinationId, inclusive)
+        fun navigateUp() {
+            instance?.navController?.navigateUp()
+        }
+
+        fun moveTaskToBack() {
+            instance?.moveTaskToBack(true)
         }
     }
 }

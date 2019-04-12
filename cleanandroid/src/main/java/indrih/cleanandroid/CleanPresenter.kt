@@ -1,6 +1,7 @@
 package indrih.cleanandroid
 
 import androidx.annotation.CallSuper
+import androidx.navigation.NavOptions
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import org.jetbrains.anko.AnkoLogger
@@ -129,8 +130,12 @@ abstract class CleanPresenter<Event, Screen> :
     protected inline fun <reified T : Any> getArg(name: String? = null): T =
         allArgs.getArg(name)
 
-    protected fun <S : Screen> navigateTo(screen: S) {
-        MainRouter.navigate(screen)
+    protected fun <S : Screen> navigateTo(screen: S, navOptions: NavOptions? = null) {
+        MainRouter.navigate(screen, navOptions)
+    }
+
+    override fun navigateUp() {
+        MainRouter.navigateUp()
     }
 
     override fun popBackStack() {

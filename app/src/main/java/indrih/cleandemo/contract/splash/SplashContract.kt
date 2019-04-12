@@ -1,4 +1,4 @@
-package indrih.cleandemo.contract.chain
+package indrih.cleandemo.contract.splash
 
 import indrih.cleanandroid.AbstractEvent
 import indrih.cleanandroid.AbstractScreen
@@ -6,13 +6,10 @@ import indrih.cleanandroid.CleanContract
 import indrih.cleandemo.R
 import indrih.cleandemo.base.MainFragment
 
-interface ChainContract : CleanContract {
+interface SplashContract : CleanContract {
     interface View : CleanContract.View<Event>
 
     sealed class Event : AbstractEvent() {
-        object ShowFirst : Event()
-        object ShowSecond : Event()
-        object ShowThird : Event()
 
         /**
          * Оборачиваищий ивент над [MainFragment.MainEvent].
@@ -20,13 +17,19 @@ interface ChainContract : CleanContract {
         class Main<T : MainFragment.MainEvent>(val main: T) : Event()
     }
 
-    interface Presenter : CleanContract.Presenter<Event> {
-        fun startButtonWasPressed()
-    }
+    interface Presenter : CleanContract.Presenter<Event>
 
     interface Interactor : CleanContract.Interactor
 
     interface Gateway : CleanContract.Gateway
 
-    sealed class Screen(action: Int) : AbstractScreen(action, R.id.chainFragment)
+    sealed class Screen(action: Int) : AbstractScreen(
+        action,
+        screenId = R.id.splashFragment,
+        inclusive = true
+    ) {
+        object Start : Screen(
+            R.id.action_splashFragment_to_startFragment
+        )
+    }
 }
