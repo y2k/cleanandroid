@@ -20,13 +20,24 @@ object DefaultRouter : Router(), AnkoLogger {
 
     override fun popBackStack() {
         val lastScreen = screenList.lastOrNull()
-        if (lastScreen != null)
-            popBackStackTo(lastScreen)
-        else
+        if (lastScreen != null) {
+            screenList.remove(lastScreen)
+            activity?.navController?.popBackStack(
+                lastScreen.screenId,
+                lastScreen.inclusive
+            )
+        } else {
             moveTaskToBack()
+        }
     }
 
     override fun popBackStackTo(screen: AbstractScreen) {
+        val index = screenList.indexOf(screen)
+        if (index != -1) {
+            for (i in index..screenList.lastIndex) {
+                screenList.removeAt(i)
+            }
+        }
         activity?.navController?.popBackStack(screen.screenId, screen.inclusive)
     }
 
