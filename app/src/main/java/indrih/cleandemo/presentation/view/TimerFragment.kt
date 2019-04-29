@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import indrih.cleandemo.R
 import indrih.cleandemo.base.MainFragment
 import indrih.cleandemo.contract.timer.TimerContract
-import indrih.cleandemo.presentation.presenter.TimerPresenter
 import indrih.cleandemo.contract.timer.TimerContract.Event.*
+import indrih.cleandemo.presentation.presenter.TimerPresenter
 import kotlinx.android.synthetic.main.fragment_timer.view.*
 
 class TimerFragment :
@@ -21,7 +21,7 @@ class TimerFragment :
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? = inflater
-        .inflate(R.layout.fragment_timer, container, false) { view ->
+        .inflate(R.layout.fragment_timer, container, false) { view: View ->
             view.start_button.setOnClickListener {
                 presenter.startButtonWasPressed()
             }
@@ -38,7 +38,7 @@ class TimerFragment :
     override fun notify(event: TimerContract.Event) {
         when (event) {
             is SetCounterValue ->
-                fragmentView.counter_text_view.text = event.value.toString()
+                currentView.counter_text_view.text = event.value.toString()
 
             is ShowEnteredText ->
                 showAlert(

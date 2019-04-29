@@ -1,12 +1,11 @@
 package indrih.cleanandroid
 
 import androidx.annotation.CallSuper
-import androidx.navigation.NavOptions
-import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
-import org.jetbrains.anko.AnkoLogger
 import indrih.cleanandroid.AbstractEvent.ShowMode.*
 import indrih.cleanandroid.router.Router
+import kotlinx.coroutines.*
+import org.jetbrains.anko.AnkoLogger
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Базовая реализация Presenter-а, от которой нужно наследовать все остальные Presenter-ы.
@@ -27,24 +26,24 @@ abstract class CleanPresenter<Event, Screen> :
      ******************* View ******************
      */
 
-    private var firstAttached = true
+    private var firstAttached = false
 
     val eventScheduler = EventScheduler<Event>()
 
     @CallSuper
     override fun attachView(view: CleanContract.View<Event>) {
+        if (writeToLog)
+            logMessage("attachView")
         eventScheduler.attachView(view, writeToLog)
 
-        if (firstAttached) {
+        if (!firstAttached) {
             onFirstAttached()
-            firstAttached = false
+            firstAttached = true
         } else {
             launch {
                 eventScheduler.restoreState(view)
             }
         }
-        if (writeToLog)
-            logMessage("attachView")
     }
 
     @CallSuper
@@ -55,16 +54,16 @@ abstract class CleanPresenter<Event, Screen> :
 
     @CallSuper
     override fun detachView() {
-        eventScheduler.detachView()
         if (writeToLog)
             logMessage("detachView")
+        eventScheduler.detachView()
     }
 
     @CallSuper
     override fun onCleared() {
-        coroutineContext.cancelChildren()
         if (writeToLog)
             logMessage("onCleared")
+        coroutineContext.cancelChildren()
     }
 
     protected fun dropEventBuffer() {
@@ -79,6 +78,8 @@ abstract class CleanPresenter<Event, Screen> :
      */
     override fun eventIsCommitted(event: Event) {
         val showMode = event.showMode
+        if (writeToLog)
+            logMessage("eventIsCommitted: ${event.token}")
         launch {
             when (showMode) {
                 is Once ->
@@ -100,10 +101,10 @@ abstract class CleanPresenter<Event, Screen> :
         event: E,
         showMode: AbstractEvent.ShowMode = Once()
     ) {
-        event.init(showMode)
         if (writeToLog)
             logMessage("notifyUI: $event")
 
+        event.init(showMode)
         launch {
             eventScheduler.send(event)
 
@@ -134,23 +135,6 @@ abstract class CleanPresenter<Event, Screen> :
     protected inline fun <reified T : Any> getArg(name: String? = null): T =
         allArgs.getArg(name)
 
-    @Deprecated(
-        message = "Use router.navigateTo()",
-        replaceWith = ReplaceWith("router.navigateTo(screen, navOptions)"),
-        level = DeprecationLevel.ERROR
-    )
-    protected open fun <S : Screen> navigateTo(screen: S, navOptions: NavOptions? = null) {
-        router.navigateTo(screen, navOptions)
-    }
-
-    override fun navigateUp() {
-        router.navigateUp()
-    }
-
-    override fun popBackStack() {
-        router.popBackStack()
-    }
-
     /*
      ******************* Coroutine ******************
      */
@@ -173,11 +157,10 @@ abstract class CleanPresenter<Event, Screen> :
 
                 try {
                     block()
+                    started.set(false)
                 } catch (e: Exception) {
                     started.set(false)
                     throw e
-                } finally {
-                    started.set(false)
                 }
             }
         }

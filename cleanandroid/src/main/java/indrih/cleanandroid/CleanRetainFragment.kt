@@ -11,8 +11,9 @@ import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import indrih.cleanandroid.AbstractEvent.ShowMode.EveryTime
+import indrih.cleanandroid.AbstractEvent.ShowMode.Once
 import org.jetbrains.anko.AnkoLogger
-import indrih.cleanandroid.AbstractEvent.ShowMode.*
 
 /**
  * Базовая реализация Fragment-а, от которой нужно наследовать все остальные Fragment-ы.
@@ -36,9 +37,17 @@ abstract class CleanRetainFragment<Event, Presenter> :
         presenterFactory()
     }
 
+    @Deprecated(
+        message = "Use view",
+        replaceWith = ReplaceWith("currentView"),
+        level = DeprecationLevel.ERROR
+    )
     protected val fragmentView: View
         get() = requireNotNull(_view)
     private var _view: View? = null
+
+    protected val currentView: View
+        get() = requireNotNull(view)
 
     protected var writeToLog = false
 
@@ -55,7 +64,6 @@ abstract class CleanRetainFragment<Event, Presenter> :
         attachToRoot: Boolean = false,
         init: (view: View) -> Unit
     ): View = inflate(resource, container, attachToRoot).also {
-        _view = it
         init(it)
     }
 

@@ -48,20 +48,6 @@ interface CleanContract {
          * Вызывается [View], когда ивент обработан и вновь вызывать его не нужно.
          */
         fun eventIsCommitted(event: Event)
-
-        @Deprecated(
-            message = "Use router.navigateUp()",
-            replaceWith = ReplaceWith("router.navigateUp()"),
-            level = DeprecationLevel.ERROR
-        )
-        fun navigateUp()
-
-        @Deprecated(
-            message = "Use router.popBackStack()",
-            replaceWith = ReplaceWith("router.popBackStack()"),
-            level = DeprecationLevel.ERROR
-        )
-        fun popBackStack()
     }
 
     /**
