@@ -13,7 +13,7 @@ android {
         versionCode 6
         versionName "1.0.5"
 
-        buildToolsVersion "29.0.0-rc1"
+        buildToolsVersion "29.0.0-rc2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -32,7 +32,7 @@ dependencies {
 
     // AndroidX
     implementation "androidx.appcompat:appcompat:$supportAppcompatVersion"
-    implementation "androidx.constraintlayout:constraintlayout:2.0.0-alpha3"
+    implementation "androidx.constraintlayout:constraintlayout:2.0.0-alpha4"
 
     // Navigation
     implementation "android.arch.navigation:navigation-fragment:$navVersion"
@@ -54,8 +54,10 @@ dependencies {
     // Clean Android library
     implementation project(":cleanandroid")
 
+
+    implementation "com.github.salomonbrys.kotson:kotson:2.5.0"
+
     // Тесты
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0-beta01'
     testImplementation "junit:junit:4.12"
     androidTestImplementation "androidx.test:runner:1.1.1"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.1.1"

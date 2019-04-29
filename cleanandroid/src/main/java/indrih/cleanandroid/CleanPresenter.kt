@@ -35,16 +35,16 @@ abstract class CleanPresenter<Event, Screen> :
     override fun attachView(view: CleanContract.View<Event>) {
         eventScheduler.attachView(view, writeToLog)
 
-        launch {
-            if (firstAttached) {
-                onFirstAttached()
-                firstAttached = false
-            } else {
+        if (firstAttached) {
+            onFirstAttached()
+            firstAttached = false
+        } else {
+            launch {
                 eventScheduler.restoreState(view)
             }
-            if (writeToLog)
-                logMessage("attachView")
         }
+        if (writeToLog)
+            logMessage("attachView")
     }
 
     @CallSuper
@@ -101,11 +101,11 @@ abstract class CleanPresenter<Event, Screen> :
         showMode: AbstractEvent.ShowMode = Once()
     ) {
         event.init(showMode)
+        if (writeToLog)
+            logMessage("notifyUI: $event")
 
         launch {
             eventScheduler.send(event)
-            if (writeToLog)
-                logMessage("notifyUI: $event")
 
             if (showMode is Once && showMode.autoRemoval)
                 eventScheduler.removeAllEqual(event)
@@ -128,7 +128,7 @@ abstract class CleanPresenter<Event, Screen> :
     protected val router: Router = CleanActivity.router
 
     protected val allArgs: HashMap<String, Any> by lazy {
-        router.copyAndDelete()
+        router.getAllArgs()
     }
 
     protected inline fun <reified T : Any> getArg(name: String? = null): T =

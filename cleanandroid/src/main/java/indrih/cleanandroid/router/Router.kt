@@ -24,11 +24,8 @@ abstract class Router {
 
     abstract fun clearStack()
 
-    fun copyAndDelete(): HashMap<String, Any> {
-        val res = argsMap.getAllArgs()
-        argsMap.deleteAllArgs()
-        return res
-    }
+    fun getAllArgs(): HashMap<String, Any> =
+        argsMap.getAllArgs()
 
     protected fun <Screen : AbstractScreen> setArgs(screen: Screen) {
         argsMap.deleteAllArgs()

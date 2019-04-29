@@ -17,7 +17,7 @@ sealed class Event : AbstractEvent() {
     class Fii(val i: Int) : Event()
 }
 
-val mutexEventList = MutexEventList<Event>()
+internal val mutexEventList = MutexEventList<Event>()
 
 class ExampleUnitTest {
     @Test
