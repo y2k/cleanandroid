@@ -1,12 +1,12 @@
 # CleanAndroid
 ## Установка
 Текущая версия
-```
+```gradle
 clean_android_version = '1.4.5'
 ```
 
 Зависимости
-```
+```gradle
 allprojects {
     repositories {
         jcenter()
@@ -83,15 +83,15 @@ dependencies {
 а так же набор mutex-экстеншенов для `MutableCollection` и `MutableMap`.
 
    Примеры:
-   ```
+   ```kotlin
    userList.safeAdd(user)
    ```
    
-   ```
+   ```kotlin
    userList.safeFirstOrNull { it.id == 5 }
    ```
    
-   ```
+   ```kotlin
    someMap.safeForEach { suspendFunc(it.key, it.value) }
    ```
    
@@ -101,7 +101,7 @@ dependencies {
 [Router](https://github.com/indrih17/cleanandroid/blob/master/cleanandroid/src/main/java/indrih/cleanandroid/router/Router.kt) 
 и допишите эти строчки в Вашем `Activity`:
 
-    ```
+    ```kotlin
     init {
         router = MyRouter
     }
@@ -110,7 +110,7 @@ dependencies {
 ## Правильный менеджемент корутин
 #### На стороне Презентера
 По умолчанию запуск идёт в `Main`.
-```
+```kotlin
 launch {
     val userList = interactor.selectAllUsers()
     notifyUI(SetOnDisplay(userList))
@@ -122,14 +122,14 @@ launch {
 
 #### На стороне Интерактора
 По умолчанию запуск идёт в `Default`.
-```
+```kotlin
 fun selectAllUsers() = def { 
     gateway.selectAllUsers()
 } 
 ```
 
 Или если Вам нужно запускать несколько параллельных корутин
-```
+```kotlin
 fun selectAllUsers() = coroutineScope { 
     launch(standardContext) {
         // ...
@@ -140,7 +140,7 @@ fun selectAllUsers() = coroutineScope {
 ## Events
 #### На стороне контракта
 Создаём базовый Event, который будет содержать общие команды для всех экранов:
-```
+```kotlin
 sealed class MainEvent : CleanContract.AbstractEvent() {
     object ShowKeyboard : MainEvent()
 
@@ -149,7 +149,7 @@ sealed class MainEvent : CleanContract.AbstractEvent() {
 ```
 
 Определяем нужный нам Event:
-```
+```kotlin
 sealed class Event : CleanContract.AbstractEvent() {
     class SetUserInfo(val user: User) : Event()
     
@@ -163,7 +163,7 @@ sealed class Event : CleanContract.AbstractEvent() {
 
 #### На стороне Фрагмента
 Добавляем в свой главный абстрактный Фрагмент обработку общих событий:
-```
+```kotlin
 fun notifyMain(event: Event, mainEvent: MainEvent) {
     when (mainEvent) {
         is ShowKeyboard ->
@@ -179,7 +179,7 @@ fun notifyMain(event: Event, mainEvent: MainEvent) {
 ```
 
 Переопределяем метод `fun notify(event: Event)` в дочернем Фрагменте:
-```
+```kotlin
 override fun notify(event: Event) {
     when (event) {
         is SetUserInfo ->
@@ -200,7 +200,7 @@ override fun notify(event: Event) {
 ```
 #### На стороне Презентера
 * Пример обычного использования
-```
+```kotlin
 launch {
     notifyUI(ShowProgressBar)
     val user = interactor.loadUserInfo()
@@ -210,7 +210,7 @@ launch {
 ```
 
 * Пример с использованием `MainEvent`
-```
+```kotlin
 val event = when("") {
     surname -> 
         EnterSurname
@@ -248,7 +248,7 @@ if (event != null) {
    Так же, они переживут и onCleared. Умрут они только вместе с Presenter-ом.
 3) Chain - цепочка событий.
    К примеру: у Вас есть два Event - ShowProgress и HideProgress:
-   ```
+   ```kotlin
    sealed class Event : AbstractEvent() {
        object ShowProgress : Event()
        
@@ -257,7 +257,7 @@ if (event != null) {
    ```
 
    Вы организовываете их в цепочку (Цепочка подобна связанным спискам):
-   ```
+   ```kotlin
    val chain = createChain()
    notifyUI(Event.ShowProgress, showMode = chain)
    // ...
@@ -275,7 +275,7 @@ if (event != null) {
 ## Навигация и передача аргументов
 1) Объявляем Screen для нужного экрана, передавая необходимые данные
 в базовый `AbstractScreen`:
-   ```
+   ```kotlin
    sealed class Screen(
        action: Int
    ) : AbstractScreen(
@@ -314,7 +314,7 @@ if (event != null) {
 `sealed`-класс в виде дженерика.
 
 3) Для перехода на нужный экран в Presenter-е вызываем:
-   ```
+   ```kotlin
    // без параметров
    router.navigateTo(SomeScreen)
    
@@ -323,17 +323,17 @@ if (event != null) {
    ```
    
 4) Для получения переданных зависимостей в Presenter-е:
-   ```
+   ```kotlin
    val device: Device = getArg()
    ```
    
    Если же Вы передаёте несколько зависимостей одинакового типа:
-   ```
+   ```kotlin
    val device1: Device = getArg("device1")
    val device2: Device = getArg("device2")
    ```
    
    Но можно получить все аргументы без приведений типов
-   ```
+   ```kotlin
    val args: HashMap<String, Any> = allArgs
    ```
